@@ -86,9 +86,10 @@ headcount ≥ 1 when attending; headcount ≤ family member count + 2 (buffer fo
    **Remind** re-uses the live token, targets non-responders only.
 
 Failure handling: SMTP failures recorded in email_log with status, surfaced
-in committee view as "failed — retry"; invalid/expired token page offers
-"request a fresh link" (emails the family's address on file — never reveals
-that address in the UI).
+in committee view as "failed — retry"; invalid/expired token page shows a
+warm apology + "ask the family to resend your link" (committee resends).
+Self-service "request a fresh link" (emails the address on file, never
+revealed in the UI) = production scope.
 
 ## 6. Auth & safety model
 
