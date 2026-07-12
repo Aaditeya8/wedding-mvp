@@ -8,6 +8,13 @@
       "when": 1783855142010,
       "tag": "0000_cynical_newton_destine",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783855440542,
+      "tag": "0001_absurd_hobgoblin",
+      "breakpoints": true
     }
   ]
 }

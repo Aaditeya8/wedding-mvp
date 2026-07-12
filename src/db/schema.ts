@@ -74,6 +74,25 @@ export const users = pgTable("users", {
   emailVerified: timestamp("email_verified", { withTimezone: true }), // Auth.js adapter field
 });
 
+export const accounts = pgTable("accounts", {
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  type: text("type").notNull(),
+  provider: text("provider").notNull(),
+  providerAccountId: text("provider_account_id").notNull(),
+}, (t) => [primaryKey({ columns: [t.provider, t.providerAccountId] })]);
+
+export const sessions = pgTable("sessions", {
+  sessionToken: text("session_token").primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  expires: timestamp("expires", { withTimezone: true }).notNull(),
+});
+
+export const verificationTokens = pgTable("verification_tokens", {
+  identifier: text("identifier").notNull(),
+  token: text("token").notNull(),
+  expires: timestamp("expires", { withTimezone: true }).notNull(),
+}, (t) => [primaryKey({ columns: [t.identifier, t.token] })]);
+
 export const emailLog = pgTable("email_log", {
   id: uuid("id").defaultRandom().primaryKey(),
   familyId: uuid("family_id").notNull().references(() => families.id, { onDelete: "cascade" }),
