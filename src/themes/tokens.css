@@ -15,31 +15,32 @@
   --font-body: var(--font-inter), ui-sans-serif, sans-serif;
 }
 
-/* raj-mahal and gulaab-rococo are filled in by the theme task (Task 10). */
+/* Royal heritage: maroon ground, gold line-work, indigo counterpoint */
 [data-theme="raj-mahal"] {
-  --bg: #faf8f4;
-  --surface: #ffffff;
-  --ink: #232323;
-  --ink-soft: #726c60;
-  --accent: #e8930c;
-  --accent-2: #9a5b03;
-  --hairline: rgba(35, 35, 35, 0.18);
-  --band-bg: #232323;
-  --band-ink: #faf8f4;
+  --bg: #2a0a10;
+  --surface: #40101c;
+  --ink: #f5ead6;
+  --ink-soft: #c8a678;
+  --accent: #d4a439;
+  --accent-2: #e6c26e;
+  --hairline: rgba(212, 164, 57, 0.32);
+  --band-bg: #1c2145;
+  --band-ink: #f5ead6;
   --font-display: var(--font-cormorant), Georgia, serif;
   --font-body: var(--font-inter), ui-sans-serif, sans-serif;
 }
 
+/* Romantic rococo: blush ground, rani pink, lavender counterpoint */
 [data-theme="gulaab-rococo"] {
-  --bg: #faf8f4;
+  --bg: #fdf2f6;
   --surface: #ffffff;
-  --ink: #232323;
-  --ink-soft: #726c60;
-  --accent: #e8930c;
-  --accent-2: #9a5b03;
-  --hairline: rgba(35, 35, 35, 0.18);
-  --band-bg: #232323;
-  --band-ink: #faf8f4;
+  --ink: #4a2b3a;
+  --ink-soft: #a5758b;
+  --accent: #c2447a;
+  --accent-2: #8b7ab8;
+  --hairline: rgba(194, 68, 122, 0.28);
+  --band-bg: #9c2f5f;
+  --band-ink: #fdf2f6;
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-body: var(--font-inter), ui-sans-serif, sans-serif;
 }
