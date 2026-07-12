@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 780">
+  <rect width="600" height="780" fill="#2c2822"/>
+  <g fill="none" stroke="#f4eee1" stroke-width="3">
+    <path d="M300 460 C 260 380, 260 300, 300 220 C 340 300, 340 380, 300 460 Z"/>
+    <path d="M300 460 C 220 420, 175 350, 170 270 C 250 300, 290 370, 300 460 Z"/>
+    <path d="M300 460 C 380 420, 425 350, 430 270 C 350 300, 310 370, 300 460 Z"/>
+    <path d="M300 460 C 190 460, 120 420, 85 350 C 180 340, 260 390, 300 460 Z" opacity=".6"/>
+    <path d="M300 460 C 410 460, 480 420, 515 350 C 420 340, 340 390, 300 460 Z" opacity=".6"/>
+  </g>
+  <g fill="#dd8c0d">
+    <circle cx="300" cy="220" r="7"/><circle cx="170" cy="270" r="5"/><circle cx="430" cy="270" r="5"/>
+  </g>
+  <path d="M140 540 C 240 500, 360 500, 460 540" fill="none" stroke="#dd8c0d" stroke-width="2" stroke-dasharray="3 10"/>
+  <text x="300" y="640" text-anchor="middle" font-family="Georgia, serif" font-size="20" letter-spacing="8" fill="#f4eee1">KAMAL</text>
+</svg>

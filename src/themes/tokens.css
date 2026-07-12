@@ -1,0 +1,45 @@
+/* Theme contract: every themed surface reads ONLY these variables.
+   Sections stay theme-agnostic; identity lives here + in ornaments.tsx. */
+
+[data-theme="ivory-editorial"] {
+  --bg: #faf8f4;
+  --surface: #ffffff;
+  --ink: #232323;
+  --ink-soft: #726c60;
+  --accent: #e8930c;
+  --accent-2: #9a5b03;
+  --hairline: rgba(35, 35, 35, 0.18);
+  --band-bg: #232323;
+  --band-ink: #faf8f4;
+  --font-display: var(--font-instrument), Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, sans-serif;
+}
+
+/* raj-mahal and gulaab-rococo are filled in by the theme task (Task 10). */
+[data-theme="raj-mahal"] {
+  --bg: #faf8f4;
+  --surface: #ffffff;
+  --ink: #232323;
+  --ink-soft: #726c60;
+  --accent: #e8930c;
+  --accent-2: #9a5b03;
+  --hairline: rgba(35, 35, 35, 0.18);
+  --band-bg: #232323;
+  --band-ink: #faf8f4;
+  --font-display: var(--font-cormorant), Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, sans-serif;
+}
+
+[data-theme="gulaab-rococo"] {
+  --bg: #faf8f4;
+  --surface: #ffffff;
+  --ink: #232323;
+  --ink-soft: #726c60;
+  --accent: #e8930c;
+  --accent-2: #9a5b03;
+  --hairline: rgba(35, 35, 35, 0.18);
+  --band-bg: #232323;
+  --band-ink: #faf8f4;
+  --font-display: var(--font-fraunces), Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, sans-serif;
+}

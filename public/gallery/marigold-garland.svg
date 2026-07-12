@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 780">
+  <rect width="600" height="780" fill="#f4eee1"/>
+  <g fill="none" stroke="#2c2822" stroke-width="2">
+    <path d="M80 60 C 140 300, 140 480, 300 620 C 460 480, 460 300, 520 60" opacity=".35"/>
+  </g>
+  <g>
+    <circle cx="86" cy="80" r="26" fill="#dd8c0d"/>
+    <circle cx="120" cy="180" r="20" fill="#e8a53a"/>
+    <circle cx="140" cy="270" r="26" fill="#dd8c0d"/>
+    <circle cx="170" cy="360" r="18" fill="#a4501f"/>
+    <circle cx="205" cy="445" r="24" fill="#dd8c0d"/>
+    <circle cx="250" cy="530" r="18" fill="#e8a53a"/>
+    <circle cx="300" cy="600" r="28" fill="#dd8c0d"/>
+    <circle cx="350" cy="530" r="18" fill="#e8a53a"/>
+    <circle cx="395" cy="445" r="24" fill="#dd8c0d"/>
+    <circle cx="430" cy="360" r="18" fill="#a4501f"/>
+    <circle cx="460" cy="270" r="26" fill="#dd8c0d"/>
+    <circle cx="480" cy="180" r="20" fill="#e8a53a"/>
+    <circle cx="514" cy="80" r="26" fill="#dd8c0d"/>
+  </g>
+  <g fill="#f4eee1">
+    <circle cx="86" cy="80" r="9"/><circle cx="140" cy="270" r="9"/>
+    <circle cx="205" cy="445" r="8"/><circle cx="300" cy="600" r="10"/>
+    <circle cx="395" cy="445" r="8"/><circle cx="460" cy="270" r="9"/>
+    <circle cx="514" cy="80" r="9"/>
+  </g>
+  <text x="300" y="730" text-anchor="middle" font-family="Georgia, serif" font-size="20" letter-spacing="8" fill="#2c2822">GENDA PHOOL</text>
+</svg>

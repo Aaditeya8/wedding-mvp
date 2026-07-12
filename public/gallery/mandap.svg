@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 780">
+  <rect width="600" height="780" fill="#f4eee1"/>
+  <g fill="none" stroke="#2c2822" stroke-width="3">
+    <path d="M120 640 V 300 C 120 160, 220 90, 300 90 C 380 90, 480 160, 480 300 V 640"/>
+    <path d="M150 640 V 310 C 150 185, 235 120, 300 120 C 365 120, 450 185, 450 310 V 640" opacity=".45" stroke-width="2"/>
+    <line x1="90" y1="640" x2="510" y2="640"/>
+    <line x1="90" y1="660" x2="510" y2="660" opacity=".4"/>
+  </g>
+  <g fill="#dd8c0d">
+    <circle cx="300" cy="90" r="10"/>
+    <circle cx="200" cy="640" r="0"/>
+  </g>
+  <g fill="none" stroke="#a4501f" stroke-width="2">
+    <path d="M180 640 V 420 M 420 640 V 420" />
+    <circle cx="180" cy="400" r="14"/><circle cx="420" cy="400" r="14"/>
+  </g>
+  <g fill="#dd8c0d" opacity=".9">
+    <circle cx="240" cy="200" r="5"/><circle cx="300" cy="180" r="5"/><circle cx="360" cy="200" r="5"/>
+    <circle cx="210" cy="240" r="5"/><circle cx="390" cy="240" r="5"/>
+  </g>
+  <text x="300" y="730" text-anchor="middle" font-family="Georgia, serif" font-size="20" letter-spacing="8" fill="#2c2822">THE MANDAP</text>
+</svg>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 780">
+  <rect width="600" height="780" fill="#efe6d3"/>
+  <g fill="none" stroke="#2c2822" stroke-width="3">
+    <circle cx="300" cy="150" r="26"/>
+    <line x1="300" y1="176" x2="300" y2="230"/>
+    <path d="M180 380 C 180 290, 240 230, 300 230 C 360 230, 420 290, 420 380 Z"/>
+  </g>
+  <g fill="#dd8c0d">
+    <circle cx="300" cy="150" r="9"/>
+  </g>
+  <g stroke="#a4501f" stroke-width="2">
+    <line x1="210" y1="392" x2="210" y2="440"/><line x1="255" y1="392" x2="255" y2="462"/>
+    <line x1="300" y1="392" x2="300" y2="478"/><line x1="345" y1="392" x2="345" y2="462"/>
+    <line x1="390" y1="392" x2="390" y2="440"/>
+  </g>
+  <g fill="#dd8c0d">
+    <circle cx="210" cy="452" r="10"/><circle cx="255" cy="474" r="10"/>
+    <circle cx="300" cy="490" r="12"/><circle cx="345" cy="474" r="10"/>
+    <circle cx="390" cy="452" r="10"/>
+  </g>
+  <g fill="#2c2822" opacity=".85">
+    <circle cx="240" cy="300" r="4"/><circle cx="300" cy="280" r="4"/><circle cx="360" cy="300" r="4"/>
+    <circle cx="220" cy="350" r="4"/><circle cx="300" cy="330" r="4"/><circle cx="380" cy="350" r="4"/>
+  </g>
+  <text x="300" y="730" text-anchor="middle" font-family="Georgia, serif" font-size="20" letter-spacing="8" fill="#2c2822">JHUMKA</text>
+</svg>

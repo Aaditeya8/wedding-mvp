@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600">
+  <rect width="600" height="600" fill="#2c2822"/>
+  <g fill="none" stroke="#e8a53a" stroke-width="3">
+    <path d="M300 120 C 460 140, 480 330, 380 420 C 320 474, 220 460, 190 390 C 165 330, 210 270, 270 280 C 320 289, 340 350, 300 380"/>
+    <path d="M300 165 C 420 185, 435 320, 360 390" opacity=".5" stroke-width="2"/>
+  </g>
+  <g fill="#dd8c0d">
+    <circle cx="300" cy="120" r="6"/><circle cx="380" cy="420" r="6"/>
+    <circle cx="300" cy="380" r="8"/>
+  </g>
+  <g fill="#f4eee1" opacity=".8">
+    <circle cx="150" cy="150" r="3"/><circle cx="120" cy="300" r="3"/>
+    <circle cx="160" cy="470" r="3"/><circle cx="460" cy="130" r="3"/>
+    <circle cx="500" cy="300" r="3"/><circle cx="470" cy="480" r="3"/>
+  </g>
+  <text x="300" y="555" text-anchor="middle" font-family="Georgia, serif" font-size="18" letter-spacing="8" fill="#f4eee1">PAISLEY</text>
+</svg>
