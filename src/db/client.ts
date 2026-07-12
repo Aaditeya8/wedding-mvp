@@ -8,8 +8,11 @@ const url = process.env.DATABASE_URL;
 
 function makeDb() {
   if (url) return drizzleNeon(neon(url), { schema });
-  // Embedded Postgres for local dev/tests. In-memory when VITEST, on-disk otherwise.
-  const pglite = new PGlite(process.env.VITEST ? undefined : "var/pglite");
+  // Embedded Postgres for local dev/tests. On-disk PGlite supports only ONE
+  // process at a time: tests and `next build` workers use throwaway in-memory
+  // instances so they never contend with (or corrupt) the dev server's data dir.
+  const ephemeral = process.env.VITEST || process.env.NEXT_PHASE === "phase-production-build";
+  const pglite = new PGlite(ephemeral ? undefined : "var/pglite");
   return drizzlePglite(pglite, { schema });
 }
 
