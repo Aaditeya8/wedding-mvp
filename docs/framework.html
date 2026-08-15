@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Wedding MVP — The Stack, and Why It Isn't MERN</title>
+<style>
+  @page { size: A4; margin: 12mm 14mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    color: #232323; background: #fff;
+    font-size: 10.5pt; line-height: 1.55; margin: 0;
+  }
+  h1, h2, h3 { font-family: Georgia, serif; letter-spacing: -0.01em; line-height: 1.15; }
+  h1 { font-size: 26pt; margin: 0 0 4pt; }
+  h2 { font-size: 15pt; margin: 22pt 0 6pt; padding-bottom: 4pt; border-bottom: 1.5pt solid #e8930c; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; color: #9a5b03; }
+  p { margin: 5pt 0; }
+  .kicker { font-family: Helvetica, Arial, sans-serif; font-size: 7.5pt; letter-spacing: 0.3em; text-transform: uppercase; color: #726c60; }
+  .lead { font-size: 11.5pt; color: #444; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 8.5pt; }
+  code { background: #f6f2ea; padding: 1pt 3pt; border-radius: 2pt; }
+  pre {
+    background: #faf8f4; border: 0.75pt solid #e5ddcc; border-left: 3pt solid #e8930c;
+    padding: 7pt 9pt; overflow-x: auto; white-space: pre-wrap; margin: 6pt 0;
+    page-break-inside: avoid; line-height: 1.45;
+  }
+  pre code { background: none; padding: 0; }
+  pre .cmt { color: #8a8375; }
+  table { border-collapse: collapse; width: 100%; margin: 7pt 0; font-size: 9pt; page-break-inside: avoid; }
+  th, td { border: 0.75pt solid #d9d2c2; padding: 4.5pt 6pt; text-align: left; vertical-align: top; }
+  th { background: #f6f2ea; font-family: Helvetica, Arial, sans-serif; font-size: 8pt; letter-spacing: 0.08em; text-transform: uppercase; }
+  ul, ol { margin: 5pt 0 5pt 16pt; padding: 0; }
+  li { margin: 2.5pt 0; }
+  a { color: #9a5b03; }
+  .box {
+    background: #fdf6ec; border: 0.75pt solid #ecd9b4; border-radius: 4pt;
+    padding: 8pt 10pt; margin: 8pt 0; page-break-inside: avoid;
+  }
+  .box strong:first-child { color: #9a5b03; }
+  .cols { display: flex; gap: 12pt; }
+  .cols > div { flex: 1; }
+  .pagebreak { page-break-before: always; }
+  .footer-note { margin-top: 26pt; padding-top: 6pt; border-top: 0.75pt solid #d9d2c2; font-size: 8pt; color: #726c60; }
+
+  /* — verdict badges — */
+  .verdict { font-family: Helvetica, Arial, sans-serif; font-size: 7.5pt; font-weight: bold;
+             letter-spacing: 0.06em; text-transform: uppercase; padding: 1pt 6pt; border-radius: 999px;
+             white-space: nowrap; }
+  .v-ours { background: #232323; color: #faf8f4; }
+  .v-mern { background: #f0ece3; color: #726c60; border: 0.75pt solid #d9d2c2; }
+
+  /* — the request-path diagram — */
+  .flow { display: flex; gap: 10pt; margin: 9pt 0 4pt; page-break-inside: avoid; }
+  .flow > div { flex: 1; }
+  .flow-title { font-family: Helvetica, Arial, sans-serif; font-size: 8pt; letter-spacing: 0.1em;
+                text-transform: uppercase; color: #726c60; margin-bottom: 5pt; }
+  .hop { border: 0.75pt solid #d9d2c2; background: #fff; border-radius: 3pt;
+         padding: 3.5pt 7pt; font-size: 8.5pt; font-family: Helvetica, Arial, sans-serif; }
+  .hop.tier-a { background: #f6f2ea; }
+  .hop.tier-b { background: #faf8f4; border-color: #e5ddcc; }
+  .hop.hl { background: #232323; color: #faf8f4; border-color: #232323; }
+  .arrow { text-align: center; color: #c4bcab; font-size: 8pt; line-height: 1; margin: 1.5pt 0; }
+  .flow-foot { font-size: 8pt; color: #726c60; margin-top: 5pt; font-style: italic; }
+  .deploy-tag { font-family: Helvetica, Arial, sans-serif; font-size: 7pt; letter-spacing: 0.08em;
+                text-transform: uppercase; color: #9a5b03; }
+
+  /* — the schema graph — */
+  .schema { background: #faf8f4; border: 0.75pt solid #e5ddcc; border-radius: 4pt; padding: 9pt 11pt;
+            margin: 8pt 0; page-break-inside: avoid; font-family: "SF Mono", Menlo, Consolas, monospace;
+            font-size: 8.5pt; line-height: 1.7; white-space: pre; overflow-x: auto; }
+
+  .stat-row { display: flex; gap: 8pt; margin: 9pt 0; page-break-inside: avoid; }
+  .stat { flex: 1; border: 0.75pt solid #e5ddcc; background: #faf8f4; border-radius: 4pt;
+          padding: 6pt 8pt; text-align: center; }
+  .stat b { display: block; font-size: 17pt; line-height: 1.1; color: #232323; }
+  .stat span { font-family: Helvetica, Arial, sans-serif; font-size: 7pt; letter-spacing: 0.08em;
+               text-transform: uppercase; color: #726c60; }
+</style>
+</head>
+<body>
+
+<p class="kicker">Wedding MVP · docs · 16 August 2026</p>
+<h1>The Stack, and Why It Isn't MERN</h1>
+<p class="lead">What we're running, why each piece is there, and a point-by-point case against MERN's
+architectural commitments — including the places where MERN still wins. Written against the codebase as it
+stands: <strong>Next.js 16.2, React 19.2, ~4,000 lines of TypeScript across 48 source files</strong>, published
+at <a href="https://github.com/Aaditeya8/wedding-mvp">github.com/Aaditeya8/wedding-mvp</a>.</p>
+
+<div class="stat-row">
+  <div class="stat"><b>48</b><span>source files</span></div>
+  <div class="stat"><b>6</b><span>client components</span></div>
+  <div class="stat"><b>1</b><span>deployable app</span></div>
+  <div class="stat"><b>0</b><span>REST endpoints</span></div>
+  <div class="stat"><b>₹0</b><span>local dev cost</span></div>
+</div>
+
+<h2>1 · What we're actually running</h2>
+
+<table>
+  <tr><th>Layer</th><th>Choice</th><th>Version</th></tr>
+  <tr><td>Framework</td><td><strong>Next.js, App Router</strong> — React Server Components + Server Actions</td><td>16.2.10</td></tr>
+  <tr><td>UI runtime</td><td><strong>React</strong></td><td>19.2.4</td></tr>
+  <tr><td>Language</td><td><strong>TypeScript</strong>, strict</td><td>5.x</td></tr>
+  <tr><td>Styling</td><td><strong>Tailwind CSS v4</strong> (PostCSS plugin) over CSS custom-property theme tokens</td><td>4.x</td></tr>
+  <tr><td>Data access</td><td><strong>Drizzle ORM</strong> + <code>drizzle-kit</code> migrations</td><td>0.45 / 0.31</td></tr>
+  <tr><td>Database</td><td><strong>Postgres</strong> — PGlite embedded locally, Neon serverless in production</td><td>0.5 / 1.1</td></tr>
+  <tr><td>Auth</td><td><strong>Auth.js v5</strong> (<code>next-auth</code>), Drizzle adapter, Nodemailer magic links, DB sessions</td><td>5.0-beta</td></tr>
+  <tr><td>Validation</td><td><strong>Zod</strong></td><td>4.x</td></tr>
+  <tr><td>Email</td><td><strong>React Email</strong> for templates, <strong>Nodemailer</strong> for transport</td><td>1.0 / 7.0</td></tr>
+  <tr><td>Tests</td><td><strong>Vitest</strong> (unit), <strong>Playwright</strong> (e2e)</td><td>4.1 / 1.61</td></tr>
+  <tr><td>Host</td><td><strong>Vercel</strong></td><td>—</td></tr>
+</table>
+
+<p>There is no separate backend. No Express app, no <code>/api</code> layer beyond the single Auth.js catch-all
+route, no REST client, no Redux or React Query. <strong>The server <em>is</em> the framework.</strong></p>
+
+<div class="flow">
+  <div>
+    <p class="flow-title">A guest RSVPs — the MERN path</p>
+    <div class="hop tier-a">Browser requests page</div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-a">Empty HTML shell + JS bundle</div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-a">React hydrates, <code>useEffect</code> fires</div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-a">fetch <code>/api/rsvp/:token</code> <span class="deploy-tag">· cors</span></div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-b">Express route + handler <span class="deploy-tag">· deploy 2</span></div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-b">Mongoose model</div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-b">MongoDB</div>
+    <p class="flow-foot">7 hops · 2 deploys · types re-declared 3 times · guest waits through a spinner</p>
+  </div>
+  <div>
+    <p class="flow-title">A guest RSVPs — here</p>
+    <div class="hop hl">Browser requests page</div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-b">Server Component <code>await</code>s Drizzle</div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-b">Postgres</div>
+    <div class="arrow">↓</div>
+    <div class="hop hl">Rendered HTML, content already in it</div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-a">Guest submits → <code>submitRsvpAction(…)</code></div>
+    <div class="arrow">↓</div>
+    <div class="hop tier-b">Same server, same types, <code>revalidatePath</code></div>
+    <p class="flow-foot">1 deploy · one type graph · the first byte carries the invitation</p>
+  </div>
+</div>
+
+<h2>2 · Why each piece is here</h2>
+
+<h3>Next.js App Router — because the API layer was pure overhead</h3>
+<p>The traditional shape of this app: React SPA → <code>fetch('/api/rsvp')</code> → Express route → Mongoose
+model → Mongo. Four places to change when a field is added, three places for a type to drift, two things to
+deploy. React Server Components collapse the first three. A page reads its own data:</p>
+
+<pre><code><span class="cmt">// src/app/w/[slug]/page.tsx</span>
+export default async function WeddingPage({ params }) {
+  const data = await getWeddingBySlug((await params).slug);
+  if (!data) notFound();
+  …
+}</code></pre>
+
+<p>No endpoint, no fetch, no loading state, no serialization contract. Writes go the same way, through Server
+Actions:</p>
+
+<pre><code><span class="cmt">// src/app/rsvp/actions.ts</span>
+"use server";
+export async function submitRsvpAction(input) {
+  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0] ?? "local";
+  return submitRsvp(input, ip);
+}</code></pre>
+
+<p>The client component calls <code>submitRsvpAction(...)</code> like a local function. Next.js generates the
+transport. The argument and return types are checked by <code>tsc</code> <em>across the network boundary</em> —
+something no hand-written REST endpoint gives you for free.</p>
+
+<h3>The bundle consequence, which is the actual business reason</h3>
+<div class="box">
+  <strong>6 of the 48 files in <code>src/</code> are client components.</strong> Everything else — every
+  dashboard page, every wedding-site section, all the data access — ships <em>zero JavaScript</em> to the
+  browser.
+</div>
+<p>That matters because of who the users are. Guests open the RSVP link from a WhatsApp message, on a mid-range
+Android phone, on Indian mobile data, often at a venue with bad signal. A client-rendered SPA hands them a blank
+shell, a spinner and a waterfall of API calls. Server-rendered HTML hands them the invitation.</p>
+<p>It also matters for the wedding site itself, which exists to be shared. <code>generateMetadata</code> runs on
+the server per slug, so the WhatsApp and Instagram link preview shows the couple's names and date. An SPA renders
+that after JavaScript executes, which link-preview crawlers do not wait for.</p>
+
+<h3>Postgres + Drizzle — because this data is relational, not documents</h3>
+<p>The domain is a graph of hard relationships:</p>
+
+<div class="schema">weddings ──&lt; events ──┐
+    │                 ├──&lt; event_invites (composite PK) &gt;── families ──&lt; guests
+    └──&lt; families ────┘                                        │
+                                                               └──&lt; rsvps ──&gt; events</div>
+
+<p><code>src/db/schema.ts</code> encodes that as real constraints, not conventions:</p>
+<ul>
+  <li><strong>Foreign keys with <code>onDelete: "cascade"</code></strong> — deleting a wedding removes its
+  events, families, guests, invites and RSVPs in a single statement. The seed depends on this to stay
+  idempotent.</li>
+  <li><strong><code>uniqueIndex("rsvp_event_family").on(eventId, familyId)</code></strong> — one RSVP per family
+  per event, enforced by the database. That single line is what makes the edit-on-revisit flow safe:
+  <pre><code>await db.insert(rsvps).values({…})
+  .onConflictDoUpdate({ target: [rsvps.eventId, rsvps.familyId], set: {…} });</code></pre>
+  Double-tap submit on a flaky connection and you get one row, atomically, with no read-modify-write race. In a
+  document store this is application logic you write, test, and eventually get wrong under concurrency.</li>
+  <li><strong>Postgres enums</strong> for theme, side, role, RSVP status and age group — an invalid value is
+  rejected by the database, not by a validator someone forgot to call.</li>
+  <li><strong>Composite primary key</strong> on <code>event_invites</code>, the many-to-many between events and
+  families. Which family is invited to which ceremony is the core of the product — a cousin gets the Sangeet,
+  the office gang gets the Reception only. That's a join table.</li>
+</ul>
+<p>Drizzle sits on top as a thin, typed SQL builder rather than an abstraction layer. Row types are
+<em>inferred from the schema</em>, so renaming <code>hero_tagline</code> breaks the build in the admin dashboard
+rather than at 11pm during a demo.</p>
+
+<h3>PGlite locally, Neon in production — the ₹0 dev environment</h3>
+<p><code>src/db/client.ts</code> picks the driver from a single environment variable:</p>
+<pre><code>const url = process.env.DATABASE_URL;
+if (url) return drizzleNeon(neon(url), { schema });              <span class="cmt">// production</span>
+const pglite = new PGlite(ephemeral ? undefined : "var/pglite"); <span class="cmt">// local</span>
+return drizzlePglite(pglite, { schema });</code></pre>
+<p>Locally the entire database is a folder. No Docker, no Postgres install, no cloud account, no cost.
+<code>npm run db:reset</code> is <code>rm -rf var/pglite &amp;&amp; npm run seed</code>. Tests and production
+builds get a throwaway <strong>in-memory</strong> instance, so <code>npm test</code> can't corrupt dev data and
+suites don't need cleanup fixtures.</p>
+<p>And it is the <em>same dialect</em> both sides. Migrations, enums, <code>ON CONFLICT</code>, cascades — all
+verified locally exactly as they'll run on Neon. Compare with the usual SQLite-locally / Postgres-in-prod split,
+where a migration passes locally and fails in production.</p>
+<p>The trade-off is real and documented: on-disk PGlite is single-process, so seeding while the dev server runs
+corrupts it. That's the price of a zero-dependency dev database, and it's why <code>playwright.config.ts</code>
+polls <code>/favicon.ico</code> rather than a DB-backed route.</p>
+
+<h3>Auth.js magic links — because the actual requirement was "no passwords"</h3>
+<p>Two different access models, both password-free.</p>
+<p><strong>Guests</strong> never authenticate at all. They get a capability URL: 32 random bytes, base64url. The
+server stores only <code>sha256(token)</code> (<code>src/lib/tokens.ts</code>), so a database leak yields no
+working invite links. Tokens expire seven days after the wedding.</p>
+<p><strong>Staff</strong> get magic links via Auth.js with database sessions and <strong>no self-signup</strong> —
+the <code>signIn</code> callback rejects any address that isn't already a provisioned user row:</p>
+<pre><code><span class="cmt">// src/auth.ts</span>
+async signIn({ user }) { return isProvisionedStaff(user.email); }</code></pre>
+<p>Nobody hires a wedding committee member who then has to remember a password. Nobody wants a stranger creating
+an account on the couple's dashboard.</p>
+<p>Authorization is layered deliberately. <code>src/proxy.ts</code> (Next 16's renamed middleware) only checks
+<em>"is there a session cookie?"</em> and bounces to <code>/signin</code> — it never imports the auth module,
+because database sessions can't be validated in that runtime. The real check, <code>requireRole()</code>, runs
+inside every protected page and action, where the session is a database read:</p>
+<pre><code>if (!u?.role) redirect("/signin");
+if (!allowed.includes(u.role)) redirect(ROLE_HOME[u.role]);</code></pre>
+<div class="box">
+  <strong>Why that's safe:</strong> there is no public API surface to bypass. Server Actions execute server-side
+  by definition; there is no <code>/api/rsvp</code> a determined guest can <code>curl</code> around the check.
+  In a MERN app, every Express route is a door that must be independently guarded.
+</div>
+
+<h3>Tailwind v4 + CSS custom properties — six themes without six stylesheets</h3>
+<p>The theme system is the product's demo moment: the couple clicks a swatch and their entire site changes.
+Implementation is one attribute:</p>
+<pre><code>&lt;main data-theme={wedding.theme} className="themed"&gt;</code></pre>
+<p><code>src/themes/tokens.css</code> (93 lines) defines each theme as a block of custom properties — palette,
+display face, ornament colours. Tailwind utilities consume the variables, so switching themes re-renders zero
+components and downloads zero extra CSS. <code>src/themes/catalog.ts</code> is the single source of truth that
+the picker, the Zod schema, the email templates and <code>scripts/set-theme.ts</code> all read from.
+<strong>Six visual identities, ~420 lines of CSS total.</strong></p>
+
+<div class="pagebreak"></div>
+
+<h2>3 · Why this beats MERN principles</h2>
+<p class="lead">"MERN" is a set of architectural commitments, not just four logos. Taken one at a time.</p>
+
+<h3>3.1 · "The frontend and backend are separate applications"</h3>
+<p><span class="verdict v-mern">MERN</span> React SPA, Express API, two deploys, CORS, a shared-types package
+that goes stale, auth verified in two places.</p>
+<p><span class="verdict v-ours">Here</span> One repository, one build, one deploy, one language, one type graph.
+A server action is a function call, not an HTTP contract. Adding a field to the RSVP form touches
+<code>schema.ts</code>, the Zod schema and the form — and <code>tsc</code> names every other file that needs to
+change.</p>
+<p>For a four-person team where one person is doing all of this alongside a full-time job, eliminating an entire
+tier isn't an aesthetic preference. It's the difference between shipping the pilot and not.</p>
+
+<h3>3.2 · "Render on the client, fetch state over the wire"</h3>
+<p><span class="verdict v-mern">MERN</span> Blank HTML, then bundle, then hydrate, then <code>useEffect</code>,
+then fetch, then spinner, then content. State lives in Redux or React Query and has to be invalidated by hand.
+Link previews and SEO need a separate SSR bolt-on or a prerender service.</p>
+<p><span class="verdict v-ours">Here</span> HTML arrives with the content in it. <code>await</code> in a Server
+Component <em>is</em> the data layer. There is no cache to invalidate because there is no client cache —
+<code>revalidatePath</code> after a mutation re-renders on the server. No Redux, no React Query, and zero
+<code>useEffect</code> data fetching anywhere in the codebase.</p>
+
+<h3>3.3 · "Schemaless is faster to move in"</h3>
+<p>It's faster for the first week and slower every week after.</p>
+<table>
+  <tr><th>Guarantee</th><th>Mongo + Mongoose</th><th>Postgres + Drizzle</th></tr>
+  <tr><td>One RSVP per family per event</td><td>app-level check, racy under concurrency</td><td><code>uniqueIndex</code> + <code>onConflictDoUpdate</code>, atomic</td></tr>
+  <tr><td>Deleting a wedding cleans up its tree</td><td>manual cascade code, or orphans</td><td><code>onDelete: "cascade"</code>, one statement</td></tr>
+  <tr><td><code>theme</code> is one of six values</td><td>Mongoose enum, in-app only</td><td>Postgres enum, enforced in the DB</td></tr>
+  <tr><td>Guest belongs to a real family</td><td>nothing stops a dangling <code>familyId</code></td><td>foreign key</td></tr>
+  <tr><td>"Invited vs responded, per event"</td><td><code>$lookup</code> aggregation pipeline</td><td>a <code>count(*)</code> and a <code>sum(case when …)</code></td></tr>
+</table>
+<p>Mongoose schemas are validation that lives in your application. Postgres constraints are guarantees that live
+in your data. When the wedding is in three days and the committee is editing families on a phone, the difference
+is which bugs are <em>possible</em>.</p>
+<p>The honest counterpoint: if this data really were unstructured — arbitrary per-couple custom fields, event
+logs, scraped documents — the column would flip. <code>jsonb</code> covers most of that case anyway, in the same
+database, with transactions.</p>
+
+<h3>3.4 · "The API is the contract"</h3>
+<p><span class="verdict v-mern">MERN</span> A REST endpoint's request and response are <code>any</code> on both
+ends unless you invest in OpenAPI or tRPC. Type drift between the Mongoose model, the Express handler and the
+React prop is the single most common source of MERN bugs.</p>
+<p><span class="verdict v-ours">Here</span> <code>schema.ts</code> is the only source of truth. Drizzle infers
+row types from it, Zod validates untrusted input at the boundary (<code>submitSchema</code> in
+<code>src/lib/rsvp.ts</code>), and Server Actions carry the types across the wire. Renaming a column is a compile
+error, not a runtime <code>undefined</code>.</p>
+
+<h3>3.5 · "Node + npm gives you everything"</h3>
+<p>True — and this stack is still Node. That's the part of MERN worth keeping. What it drops is Express, which in
+2026 mostly exists to reimplement routing, body parsing and serialization that the framework already does.</p>
+
+<h3>3.6 · The scoreboard for <em>this</em> product</h3>
+<table>
+  <tr><th>Requirement</th><th>MERN answer</th><th>This stack</th></tr>
+  <tr><td>Guest RSVPs on 3G at a venue</td><td>SPA bundle + API waterfall</td><td>server-rendered HTML, ~zero JS on that route</td></tr>
+  <tr><td>WhatsApp link preview for the site</td><td>prerender service or SSR bolt-on</td><td><code>generateMetadata</code> per slug, built in</td></tr>
+  <tr><td>Multi-tenant weddings, per-role access</td><td>auth logic duplicated in Express and React</td><td><code>requireRole()</code> at every entry point, no public API to bypass</td></tr>
+  <tr><td>No-password sign-in</td><td>Passport + custom token table</td><td>Auth.js provider, ~40 lines</td></tr>
+  <tr><td>₹0 local dev</td><td>Mongo Atlas free tier or Docker</td><td>PGlite — a folder</td></tr>
+  <tr><td>Demo with no internet</td><td>needs Atlas</td><td>fully offline, mail to <code>var/outbox/mail.jsonl</code></td></tr>
+  <tr><td>One developer, evenings and weekends</td><td>two apps to maintain</td><td>one</td></tr>
+</table>
+
+<h2>4 · Where MERN — or something else — would win</h2>
+<p>Stating this plainly, because a comparison that only goes one way isn't an argument.</p>
+<ul>
+  <li><strong>Persistent realtime.</strong> Long-lived WebSockets — live seating charts, a chat channel — fit a
+  stateful Express + Socket.IO server better than serverless functions. If a live feature becomes core, expect to
+  add a small dedicated service.</li>
+  <li><strong>Genuinely schemaless data at scale.</strong> Analytics events, arbitrary ingested documents.
+  Postgres <code>jsonb</code> handles the mid-range, but not everything.</li>
+  <li><strong>Hiring.</strong> MERN is the default Indian bootcamp stack. The pool of developers who can
+  productively edit a Server Actions codebase on day one is smaller today.</li>
+  <li><strong>Framework churn.</strong> The sharpest one. Next.js moves fast enough that this repo already ships
+  <code>src/proxy.ts</code>, Next 16's rename of <code>middleware.ts</code>, and <code>AGENTS.md</code> literally
+  warns that the installed version differs from what most documentation describes. <code>next-auth</code> is on a
+  <code>5.0.0-beta</code>. Express hasn't meaningfully changed in a decade — that stability is worth
+  something.</li>
+  <li><strong>Portability.</strong> Server Components, Server Actions and the Neon driver are portable in
+  principle but comfortable on Vercel. Moving off is real work; an Express app runs anywhere. The mitigation here
+  is that the <em>domain</em> logic (<code>src/lib/*</code>) is plain TypeScript over Drizzle with no framework
+  imports — that part would move.</li>
+</ul>
+<div class="box">
+  <strong>The trade:</strong> for a pilot that has to look expensive, load fast on bad phones, keep guest data
+  correct, cost nothing to run before the first invoice, and be maintained by one person — it's worth it.
+</div>
+
+<h2>5 · One-paragraph version</h2>
+<p>We're on Next.js 16 with React Server Components and Server Actions over Postgres via Drizzle, with Auth.js
+magic links and Tailwind v4 theme tokens. It replaces MERN's SPA-plus-Express-API split with a single deployable
+app where pages read the database directly and mutations are typed function calls — which means no REST layer, no
+client state library, and almost no JavaScript shipped to the guests who matter most. We chose Postgres over
+Mongo because wedding data is a graph of hard relationships and the database, not the application, should be the
+thing enforcing "one RSVP per family per event." And we run embedded Postgres locally, so the whole product —
+sign-in and invite emails included — demos on a laptop with no internet and no monthly bill.</p>
+
+<p class="footer-note">Wedding MVP · <code>docs/framework.html</code> → <code>docs/FRAMEWORK.pdf</code> ·
+Markdown source at <code>docs/FRAMEWORK.md</code> · 16 August 2026. File and line references were checked
+against the published tree at <code>Aaditeya8/wedding-mvp@main</code>.</p>
+
+</body>
+</html>

@@ -3,6 +3,11 @@
 *Written against the codebase as it stands: Next.js 16.2, React 19.2, ~4,000 lines of
 TypeScript across 48 source files.*
 
+> **Also available as a formatted document:** [`FRAMEWORK.pdf`](FRAMEWORK.pdf) (7 pages),
+> rendered from [`framework.html`](framework.html) — same content, with a request-path
+> diagram comparing the MERN round-trip against this one. Re-render after editing with:
+> `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --no-pdf-header-footer --print-to-pdf=docs/FRAMEWORK.pdf file://$PWD/docs/framework.html`
+
 ---
 
 ## 1. What we're actually running

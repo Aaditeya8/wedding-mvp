@@ -30,7 +30,9 @@ Next.js 16 (App Router, React Server Components, Server Actions) · React 19 · 
 Tailwind CSS v4 · Drizzle ORM · Postgres (PGlite locally, Neon in production) · Auth.js v5
 magic links · Zod · React Email + Nodemailer · Vitest + Playwright.
 
-**Why this stack, and how it compares to MERN: [`docs/FRAMEWORK.md`](docs/FRAMEWORK.md).**
+**Why this stack, and how it compares to MERN:** [`docs/FRAMEWORK.md`](docs/FRAMEWORK.md) —
+also as a formatted document, [`docs/FRAMEWORK.pdf`](docs/FRAMEWORK.pdf) (7 pages, rendered
+from [`docs/framework.html`](docs/framework.html)).
 
 ## Running it locally
 
