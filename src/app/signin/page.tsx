@@ -20,26 +20,30 @@ export default async function SignInPage({
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-6">
-        <h1 className="text-2xl font-semibold">Staff sign in</h1>
+    <main className="portal-page flex items-center justify-center p-6">
+      <div className="portal-panel w-full max-w-md p-7 md:p-9">
+        <p className="portal-eyebrow">Wedding operations</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Staff sign in</h1>
+        <p className="mt-2 text-sm leading-relaxed text-neutral-500">Use the email address provisioned for your wedding role. We&apos;ll send a single-use link.</p>
         {sent ? (
-          <p className="text-sm">
-            If that address is on the team, a sign-in link is on its way.
-            Check your email.
+          <p className="mt-6 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950">
+            If that address is on the team, a sign-in link is on its way. Check your email.
           </p>
         ) : (
-          <form action={requestLink} className="space-y-4">
+          <form action={requestLink} className="mt-6 space-y-4">
+            <label className="block">
+              <span className="portal-eyebrow">Email address</span>
             <input
               type="email"
               name="email"
               required
               placeholder="you@example.com"
-              className="w-full rounded border border-neutral-300 px-3 py-2"
+              className="portal-input mt-2"
             />
+            </label>
             <button
               type="submit"
-              className="w-full rounded bg-neutral-900 px-3 py-2 text-white"
+              className="portal-button w-full"
             >
               Email me a sign-in link
             </button>

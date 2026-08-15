@@ -22,7 +22,7 @@ async function deliver(to: string, subject: string, html: string, rsvpUrl: strin
     const dir = path.join(process.cwd(), "var/outbox");
     fs.mkdirSync(dir, { recursive: true });
     fs.appendFileSync(path.join(dir, "mail.jsonl"),
-      JSON.stringify({ to, subject, html, rsvpUrl }) + "\n");
+      JSON.stringify({ to, subject, html, rsvpUrl, at: new Date().toISOString() }) + "\n");
   }
 }
 

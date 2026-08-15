@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Wedding MVP — End-to-End Animation Revamp Guide</title>
+<style>
+  @page { size: A4; margin: 12mm 14mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    color: #232323; background: #fff;
+    font-size: 10.5pt; line-height: 1.55; margin: 0;
+  }
+  h1, h2, h3 { font-family: Georgia, serif; letter-spacing: -0.01em; line-height: 1.15; }
+  h1 { font-size: 26pt; margin: 0 0 4pt; }
+  h2 { font-size: 15pt; margin: 22pt 0 6pt; padding-bottom: 4pt; border-bottom: 1.5pt solid #e8930c; }
+  h3 { font-size: 11.5pt; margin: 14pt 0 4pt; color: #9a5b03; }
+  p { margin: 5pt 0; }
+  .kicker { font-family: Helvetica, Arial, sans-serif; font-size: 7.5pt; letter-spacing: 0.3em; text-transform: uppercase; color: #726c60; }
+  .lead { font-size: 11.5pt; color: #444; }
+  code, pre { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 8.5pt; }
+  code { background: #f6f2ea; padding: 1pt 3pt; border-radius: 2pt; }
+  pre {
+    background: #faf8f4; border: 0.75pt solid #e5ddcc; border-left: 3pt solid #e8930c;
+    padding: 7pt 9pt; overflow-x: auto; white-space: pre-wrap; margin: 6pt 0;
+    page-break-inside: avoid; line-height: 1.45;
+  }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 7pt 0; font-size: 9pt; page-break-inside: avoid; }
+  th, td { border: 0.75pt solid #d9d2c2; padding: 4.5pt 6pt; text-align: left; vertical-align: top; }
+  th { background: #f6f2ea; font-family: Helvetica, Arial, sans-serif; font-size: 8pt; letter-spacing: 0.08em; text-transform: uppercase; }
+  ul, ol { margin: 5pt 0 5pt 16pt; padding: 0; }
+  li { margin: 2.5pt 0; }
+  a { color: #9a5b03; }
+  .box {
+    background: #fdf6ec; border: 0.75pt solid #ecd9b4; border-radius: 4pt;
+    padding: 8pt 10pt; margin: 8pt 0; page-break-inside: avoid;
+  }
+  .box strong:first-child { color: #9a5b03; }
+  .cols { display: flex; gap: 12pt; }
+  .cols > div { flex: 1; }
+  .pagebreak { page-break-before: always; }
+  .footer-note { margin-top: 26pt; padding-top: 6pt; border-top: 0.75pt solid #d9d2c2; font-size: 8pt; color: #726c60; }
+  .step { font-family: Helvetica, Arial, sans-serif; font-weight: bold; background: #232323; color: #faf8f4;
+          border-radius: 999px; padding: 1pt 7pt; font-size: 8.5pt; margin-right: 5pt; }
+</style>
+</head>
+<body>
+
+<p class="kicker">Wedding MVP · docs · 12 July 2026</p>
+<h1>End-to-End Animation Revamp Guide</h1>
+<p class="lead">How to take <code>/w/ananya-weds-arjun</code> (and the staff pages) from “nicely animated” to
+<em>alive</em> — which libraries to use in 2026, exactly what to build on each page, in what order, and how to
+verify it without breaking the demo. All library versions, licences and browser-support facts below were
+verified against npm and vendor docs on 12&nbsp;July&nbsp;2026.</p>
+
+<h2>1 · Where the site is today</h2>
+<p>The current animation layer is deliberately dependency-free: CSS keyframes for hero entrances
+(<code>.rise</code>, letter-stagger <code>.ltr</code>, foil shimmer), an IntersectionObserver in
+<code>sections/ScrollFx.tsx</code> driving <code>.reveal / .draw / .rule-grow</code> scroll reveals, CSS-only
+petals, marquee, scallop band edge, and the new “How we met” chapter carousel. It works in every browser,
+survives reduced-motion, and costs 0&nbsp;kB of JS beyond one tiny client component.</p>
+<p>What it <em>can’t</em> do — and what this revamp adds: <strong>pinned scroll scenes</strong> (a section that
+holds while its content scrubs), <strong>scrub-linked timelines</strong> (animation progress tied to scroll
+position, not just “entered viewport”), <strong>masked line-by-line text reveals</strong>, <strong>FLIP
+layout transitions</strong> (gallery → lightbox), and <strong>celebration moments</strong> (RSVP confetti).
+Those genuinely need a library.</p>
+
+<h2>2 · The 2026 library landscape (verified)</h2>
+<table>
+  <tr><th>Library</th><th>Version / licence</th><th>Size (gzip)</th><th>Use it for</th><th>Docs</th></tr>
+  <tr>
+    <td><strong>GSAP</strong> + ScrollTrigger + SplitText</td>
+    <td>3.15 — <strong>100% free since 3.13</strong> (Webflow acquisition); all former Club plugins
+        (SplitText, DrawSVG, MorphSVG, Flip…) now ship free in the <code>gsap</code> npm package</td>
+    <td>core ~27&nbsp;kB, +13 ScrollTrigger, +7 SplitText</td>
+    <td>Scroll storytelling: pinning, scrubbing, snap; masked text reveals; SVG draw; the gold standard</td>
+    <td>gsap.com/docs/v3</td>
+  </tr>
+  <tr>
+    <td><strong>anime.js v4</strong></td>
+    <td>4.5 (MIT) — full ESM rewrite Apr 2025</td>
+    <td>~39&nbsp;kB full, tree-shakes far smaller</td>
+    <td>SVG draw/morph (<code>svg.createDrawable</code>), springs, draggable, built-in text splitter;
+        <code>onScroll</code> scrubs but has no pin/snap</td>
+    <td>animejs.com/documentation</td>
+  </tr>
+  <tr>
+    <td><strong>Motion</strong> (ex-Framer Motion)</td>
+    <td>12.42 (MIT), import from <code>motion/react</code></td>
+    <td>34&nbsp;kB → ~6&nbsp;kB via <code>LazyMotion</code></td>
+    <td>Declarative React micro-interactions, <code>AnimatePresence</code> exits, <code>layout</code> morphs,
+        light <code>useScroll</code> parallax</td>
+    <td>motion.dev/docs/react</td>
+  </tr>
+  <tr>
+    <td><strong>Lenis</strong></td>
+    <td>1.3 (MIT) — old <code>@studio-freight/*</code> packages deprecated; React adapter is <code>lenis/react</code></td>
+    <td>5.2&nbsp;kB</td>
+    <td>Buttery smooth scroll. Keeps <code>position:sticky</code> and anchors working; CSS scroll-snap needs its plugin</td>
+    <td>lenis.dev</td>
+  </tr>
+  <tr>
+    <td><strong>Embla</strong></td>
+    <td>embla-carousel-react 8.6 (MIT) — the engine inside shadcn/ui’s carousel</td>
+    <td>7.1&nbsp;kB</td>
+    <td>Headless carousel (swipe physics, free-drag). Upgrade path for the “How we met” carousel</td>
+    <td>embla-carousel.com</td>
+  </tr>
+  <tr>
+    <td><strong>canvas-confetti</strong></td>
+    <td>1.9 (ISC), zero deps</td>
+    <td>~6&nbsp;kB</td>
+    <td>The RSVP-submitted celebration. Dynamic-import on submit only</td>
+    <td>npm: canvas-confetti</td>
+  </tr>
+  <tr>
+    <td><strong>Native CSS</strong></td>
+    <td>scroll-driven animations: Chrome 115+, Safari 26+, Firefox still flagged ·
+        <code>@starting-style</code>: Baseline · View Transitions: same-doc everywhere, cross-doc Chrome/Safari</td>
+    <td>0&nbsp;kB</td>
+    <td>Progressive enhancement only — the site already treats it that way (our old view() timeline bug is why)</td>
+    <td>MDN</td>
+  </tr>
+</table>
+
+<div class="box">
+<strong>Recommended stack for this project:</strong> <em>GSAP (ScrollTrigger + SplitText + DrawSVG) as the
+scroll-narrative engine</em>, via the official <code>@gsap/react</code> <code>useGSAP()</code> hook —
+SSR-safe, auto-cleanup, made for the App Router. Add <strong>Embla</strong> to harden the story carousel,
+<strong>canvas-confetti</strong> for RSVP success, and optionally <strong>Lenis</strong> for scroll feel
+(decide once, early — see §4). Skip Motion for now: it shines on app-like UI, and the staff portal
+deliberately stays quiet. anime.js v4 is the lighter alternative if you’d rather avoid pinned scenes
+entirely — everything in §5 marked <em>[pin]</em> is GSAP-only.
+</div>
+
+<h2>3 · Ground rules (read before writing any animation)</h2>
+<ul>
+  <li><strong>Keep the CSS layer as the fallback.</strong> The IntersectionObserver reveals stay; GSAP
+      progressively takes over sections it owns (add <code>data-gsap</code> and skip those in ScrollFx) —
+      never leave content at opacity 0 if JS fails: GSAP sets, CSS defaults to visible.</li>
+  <li><strong>Reduced motion is law.</strong> Wrap every effect in
+      <code>gsap.matchMedia().add("(prefers-reduced-motion: no-preference)", …)</code>; the CSS layer already
+      guards itself.</li>
+  <li><strong>Theme tokens only.</strong> Animate <code>var(--accent)</code>, <code>var(--hairline)</code> etc.
+      All three themes must inherit every effect free of charge, like the existing system does.</li>
+  <li><strong>Transforms + opacity only</strong> on scroll-linked tweens (compositor-friendly). Never animate
+      layout properties in a scrub.</li>
+  <li><strong>Client-component boundaries:</strong> animation code lives in <code>"use client"</code> leaf
+      components (like <code>ScrollFx.tsx</code> today); sections stay server components and pass refs down.</li>
+  <li><strong>No CLS:</strong> pinned sections reserve their height (ScrollTrigger handles this with
+      <code>pinSpacing</code>); the countdown already reserves cell height — keep that pattern.</li>
+  <li><strong>Test gates:</strong> after each page, run <code>npm test</code> and <code>npx playwright test</code>
+      (stop the dev server first — PGlite is single-process), plus a 390&nbsp;px pass in the browser.</li>
+</ul>
+
+<div class="pagebreak"></div>
+<h2>4 · Setup (once)</h2>
+<pre><code># in ~/projects/wedding-mvp, on a branch
+git checkout -b feat/animation-revamp
+npm i gsap @gsap/react embla-carousel-react embla-carousel-autoplay canvas-confetti
+npm i lenis        # optional — decide now, not later</code></pre>
+
+<p><strong>The one hook pattern used everywhere</strong> (SSR-safe, self-cleaning):</p>
+<pre><code>"use client";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
+import { useGSAP } from "@gsap/react";
+gsap.registerPlugin(ScrollTrigger, SplitText, useGSAP);
+
+export function HeroFx({ scope }: { scope: React.RefObject&lt;HTMLElement&gt; }) {
+  useGSAP(() =&gt; {
+    const mm = gsap.matchMedia();
+    mm.add("(prefers-reduced-motion: no-preference)", () =&gt; {
+      // tweens here — auto-reverted on unmount, scoped to `scope`
+    });
+  }, { scope });
+  return null;
+}</code></pre>
+
+<p><strong>Lenis decision:</strong> if you add it, mount one provider in the public site layout and wire it to
+ScrollTrigger — and then <em>don’t</em> also lean on CSS <code>animation-timeline</code> anywhere (double
+smoothing feels wrong). Skip Lenis entirely if native scroll feel is fine on the demo laptop; it is the most
+reversible choice here.</p>
+<pre><code>"use client";
+import { ReactLenis, useLenis } from "lenis/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+export function SmoothScroll({ children }) {
+  useLenis(ScrollTrigger.update);
+  return &lt;ReactLenis root options={{ lerp: 0.12 }}&gt;{children}&lt;/ReactLenis&gt;;
+}</code></pre>
+
+<h2>5 · Page-by-page revamp plan</h2>
+
+<h3>5.1 Hero — the first five seconds</h3>
+<ul>
+  <li><strong>Masked line reveal for the names</strong> (replaces per-letter CSS stagger): SplitText with
+      <code>type: "chars, lines"</code>, <code>mask: "lines"</code> — chars rise out of a clipped line, the
+      exact effect on luxury invite sites. ~8 lines of code now that SplitText is free.</li>
+  <li><strong>Scrub-linked hero exit</strong> <em>[pin]</em>: as you scroll away, names drift up at 0.8×,
+      watermark ampersand at 0.3×, petals accelerate — one timeline with
+      <code>scrollTrigger: { trigger, start: "top top", end: "bottom top", scrub: true }</code>. Replaces the
+      single-value parallax in ScrollFx.</li>
+  <li><strong>Countdown flip:</strong> on each second, tween the changed digit
+      <code>yPercent: -100</code> inside an <code>overflow:hidden</code> slot (odometer feel, serif digits).
+      Pure GSAP micro-tween in the existing <code>Countdown.tsx</code>.</li>
+  <li>Keep: petals (CSS is perfect for ambience), foil ampersand, scroll cue.</li>
+</ul>
+
+<h3>5.2 “How we met” story — chapter scrub</h3>
+<ul>
+  <li><strong>Option A (bigger wow) [pin]:</strong> replace the timed carousel with a pinned scene — section
+      pins for ~2.5 viewport-heights, chapters crossfade/slide as the visitor scrolls, progress bar maps to
+      scroll progress (<code>snap: 1/(chapters-1)</code> gives it that chaptered feel). Scroll becomes the
+      navigation; dots/arrows stay as accessible alternates.</li>
+  <li><strong>Option B (lower risk):</strong> keep auto-advance but move the engine to Embla
+      (+ <code>embla-carousel-autoplay</code>) — real swipe physics on mobile, and the current hand-rolled
+      gesture/focus logic shrinks substantially.</li>
+  <li>Ornament dividers: swap the CSS dash trick for DrawSVG on scroll — smoother, and it can draw
+      <em>and</em> fade the fill in one timeline.</li>
+</ul>
+
+<h3>5.3 Event timeline — the itinerary as a journey</h3>
+<ul>
+  <li><strong>Scrubbed progress thread:</strong> a vertical line in the number column that fills top→bottom
+      with scroll (<code>scaleY</code> scrub), each event node igniting to <code>var(--accent)</code> as the
+      thread passes — the classic wedding-itinerary treatment, and ScrollTrigger’s
+      <code>containerAnimation</code>-free bread and butter.</li>
+  <li><strong>Row choreography:</strong> <code>ScrollTrigger.batch()</code> the rows — number counts up
+      (<code>textContent</code> snap), title rises with a SplitText word-stagger, venue block follows 0.1s later.</li>
+  <li>Dress-code chips: tiny hover spring (scale 1.04, border → accent) — <code>contextSafe</code> handlers.</li>
+</ul>
+
+<h3>5.4 Gallery — plates that open</h3>
+<ul>
+  <li><strong>Flip lightbox:</strong> click a plate → it FLIPs (GSAP Flip plugin) from its grid cell to a
+      centered, enlarged card over a dimmed backdrop; ESC/click FLIPs it home. Works today with the SVG
+      plates and inherits real photos after the haldi with zero changes.</li>
+  <li><strong>Reveal upgrade:</strong> <code>ScrollTrigger.batch</code> with a small random rotation
+      (−1.5°…1.5°) per plate so the wall settles like hung frames.</li>
+</ul>
+
+<h3>5.5 RSVP band + RSVP page — the payoff</h3>
+<ul>
+  <li><strong>Band entrance:</strong> SplitText line-mask on the big headline as the band scrolls in; scallop
+      edge is already the divider — no change.</li>
+  <li><strong>Confetti on submit</strong> (on <code>/rsvp/[token]</code>): after a successful attending
+      response — <code>const confetti = (await import("canvas-confetti")).default;
+      confetti({ particleCount: 90, spread: 70, colors: [accent, accent2, "#fff"] })</code> — read the two
+      accents from <code>getComputedStyle</code> so even the confetti is themed. Skip under reduced motion.</li>
+  <li><strong>Stepper micro-feel:</strong> headcount +/− buttons get a 1.06 scale spring; per-event cards get
+      <code>@starting-style</code> entry fades (zero JS, Baseline support).</li>
+</ul>
+
+<h3>5.6 Staff portal (signin/admin/committee/couple) — restraint</h3>
+<ul>
+  <li>These pages should feel like a calm tool, not the wedding. Limit to: number <strong>count-ups</strong>
+      on stat cards (one 0.6s tween on mount), <strong>row stagger</strong> on first table paint
+      (30ms/row, opacity+4px rise), and <code>@starting-style</code> fades for modals (family editor) and the
+      sent-link confirmation. No scroll effects.</li>
+</ul>
+
+<div class="pagebreak"></div>
+<h2>6 · Execution order (end to end)</h2>
+<ol>
+  <li><span class="step">0</span><strong>Branch + install</strong> (§4). Decide Lenis now. Commit the lockfile.</li>
+  <li><span class="step">1</span><strong>Shared fx utilities:</strong> <code>src/fx/</code> with the
+      registered-plugins module and a <code>&lt;SectionFx&gt;</code> wrapper; mark GSAP-owned sections
+      <code>data-gsap</code> and make <code>ScrollFx.tsx</code> skip them. <em>Gate: site still renders with JS
+      disabled.</em></li>
+  <li><span class="step">2</span><strong>Hero</strong> (§5.1). <em>Gate: LCP unchanged ±10%, 390px clean,
+      reduced-motion shows static hero.</em></li>
+  <li><span class="step">3</span><strong>Story</strong> (§5.2 — pick A or B). <em>Gate: keyboard can still
+      drive chapters; e2e passes.</em></li>
+  <li><span class="step">4</span><strong>Timeline + Gallery</strong> (§5.3–5.4). <em>Gate: no CLS from
+      pinning; Flip returns cleanly on ESC.</em></li>
+  <li><span class="step">5</span><strong>RSVP moments</strong> (§5.5). <em>Gate: e2e RSVP flow green —
+      confetti must not block submission; it fires after the server action resolves.</em></li>
+  <li><span class="step">6</span><strong>Staff polish</strong> (§5.6). <em>Gate: unit tests green.</em></li>
+  <li><span class="step">7</span><strong>Full pass:</strong> stop dev server → <code>npm test</code> →
+      <code>npx playwright test</code> → <code>npm run build</code> → reseed → restart dev → click through all
+      three themes desktop + 390px. Then merge and (post-Task-16) <code>vercel --prod</code>.</li>
+</ol>
+<p>Each step is a commit; each gate is cheap insurance that the demo never regresses. Total effort estimate:
+steps 1–2 one evening, 3–5 a weekend, 6–7 an evening.</p>
+
+<h2>7 · Resources</h2>
+<ul>
+  <li><strong>GSAP docs</strong> — gsap.com/docs/v3 · React guide: gsap.com/resources/React · live demos: demos.gsap.com</li>
+  <li><strong>GSAP-is-free announcement</strong> — webflow.com/blog/gsap-becomes-free · licence: gsap.com/standard-license</li>
+  <li><strong>anime.js v4</strong> — animejs.com/documentation (createTimeline, svg.createDrawable, createScope for React)</li>
+  <li><strong>Motion for React</strong> — motion.dev/docs/react (AnimatePresence, layout, useScroll)</li>
+  <li><strong>Lenis</strong> — lenis.dev · github.com/darkroomengineering/lenis (ScrollTrigger wiring in README)</li>
+  <li><strong>Embla</strong> — embla-carousel.com (also the engine behind shadcn/ui’s carousel)</li>
+  <li><strong>Codrops</strong> — tympanus.net/codrops/hub · “From SplitText to MorphSVG: 5 creative demos using
+      free GSAP plugins” (May 2025) · tympanus.net/codrops/tag/scroll</li>
+  <li><strong>Native CSS scroll-driven animations</strong> — webkit.org/blog/17101 (Safari guide) ·
+      caniuse.com/mdn-css_properties_animation-timeline_scroll (Firefox still flagged — keep it enhancement-only)</li>
+  <li><strong>Inspiration</strong> — godly.website · awwwards.com · minimal.gallery · blissandbone.com
+      (editorial benchmark) · ravishkapoor.com / puneetguptainvitations.in (luxury Indian invite restraint)</li>
+</ul>
+
+<p class="footer-note">Generated 12 July 2026 for the wedding-mvp pilot · versions & licences verified against
+npm on the same day · companion files: STATUS.md (current state), docs/DEMO-RUNBOOK.md (deploy + demo script).</p>
+
+</body>
+</html>

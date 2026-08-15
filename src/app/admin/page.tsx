@@ -21,23 +21,48 @@ export default async function AdminPage() {
       return { ...w, familyCount: fams.length, responded };
     }),
   );
+  const familyCount = rows.reduce((total, wedding) => total + wedding.familyCount, 0);
+  const responded = rows.reduce((total, wedding) => total + wedding.responded, 0);
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
-      <header className="mb-8">
-        <h1 className="text-xl font-semibold">Admin — weddings</h1>
-        <p className="mt-1 text-sm text-neutral-500">Every wedding on the platform.</p>
+    <main className="portal-page">
+      <div className="portal-shell">
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div className="max-w-2xl">
+          <p className="portal-eyebrow">Platform control room</p>
+          <h1 className="portal-heading mt-2">Wedding operations</h1>
+          <p className="portal-subheading mt-3">A concise view of every event, its guest list, and the response progress behind it.</p>
+        </div>
+        <Link href="/admin/mailroom" className="portal-button-secondary">Mailroom →</Link>
       </header>
 
+      <div className="mb-8 grid gap-3 sm:grid-cols-3">
+        <div className="portal-panel portal-stat">
+          <p className="portal-stat-label">Weddings</p>
+          <p className="portal-stat-value tabular-nums">{rows.length}</p>
+          <p className="portal-stat-note">active workspace{rows.length === 1 ? "" : "s"}</p>
+        </div>
+        <div className="portal-panel portal-stat">
+          <p className="portal-stat-label">Families</p>
+          <p className="portal-stat-value tabular-nums">{familyCount}</p>
+          <p className="portal-stat-note">guest households in the system</p>
+        </div>
+        <div className="portal-panel portal-stat">
+          <p className="portal-stat-label">Responses</p>
+          <p className="portal-stat-value tabular-nums">{responded}/{familyCount}</p>
+          <p className="portal-stat-note">families with an RSVP recorded</p>
+        </div>
+      </div>
+
       {rows.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-neutral-300 p-10 text-center text-sm text-neutral-500">
+        <div className="portal-panel border-dashed p-10 text-center text-sm text-neutral-500">
           No weddings yet. Creation UI is production scope — for the demo, run{" "}
           <code className="rounded bg-neutral-100 px-1.5 py-0.5">npm run seed</code>.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-neutral-200 bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+        <div className="portal-panel overflow-x-auto">
+          <table className="portal-table w-full min-w-[44rem] text-left text-sm">
+            <thead>
               <tr>
                 <th className="p-3">Couple</th>
                 <th className="p-3">Date</th>
@@ -47,26 +72,26 @@ export default async function AdminPage() {
                 <th className="p-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100">
+            <tbody>
               {rows.map((w) => (
-                <tr key={w.id} className="hover:bg-neutral-50">
-                  <td className="p-3">
+                <tr key={w.id}>
+                  <td>
                     <p className="font-medium">{w.brideName} &amp; {w.groomName}</p>
-                    <p className="text-xs text-neutral-500">/{w.slug}</p>
+                    <p className="mt-1 text-xs text-neutral-500">/{w.slug}</p>
                   </td>
-                  <td className="p-3">{fmtWeddingDate(w.weddingDate)}</td>
-                  <td className="p-3">
-                    <span className="rounded border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-xs">
+                  <td>{fmtWeddingDate(w.weddingDate)}</td>
+                  <td>
+                    <span className="portal-badge">
                       {w.theme}
                     </span>
                   </td>
-                  <td className="p-3 tabular-nums">{w.familyCount}</td>
-                  <td className="p-3 tabular-nums">{w.responded}/{w.familyCount}</td>
-                  <td className="p-3 text-right text-xs">
-                    <a href={`/w/${w.slug}`} target="_blank" className="text-neutral-500 underline underline-offset-2">
+                  <td className="tabular-nums">{w.familyCount}</td>
+                  <td className="tabular-nums">{w.responded}/{w.familyCount}</td>
+                  <td className="text-right">
+                    <a href={`/w/${w.slug}`} target="_blank" className="portal-link">
                       site ↗
                     </a>
-                    <Link href={`/admin/weddings/${w.id}`} className="ml-3 text-neutral-900 underline underline-offset-2">
+                    <Link href={`/admin/weddings/${w.id}`} className="portal-link ml-4">
                       manage
                     </Link>
                   </td>
@@ -76,6 +101,7 @@ export default async function AdminPage() {
           </table>
         </div>
       )}
+      </div>
     </main>
   );
 }

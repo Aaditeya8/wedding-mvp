@@ -57,15 +57,17 @@ export default async function CommitteePage({
   }));
 
   return (
-    <main className="mx-auto max-w-7xl px-6 py-10">
+    <main className="portal-page">
+      <div className="portal-shell">
       <header className="mb-8 flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-semibold">Committee — {wedding.brideName} &amp; {wedding.groomName}</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            Guest list, invites and headcounts. The couple sees totals; you see everything.
+        <div className="max-w-2xl">
+          <p className="portal-eyebrow">Guest operations</p>
+          <h1 className="portal-heading mt-2">{wedding.brideName} &amp; {wedding.groomName}</h1>
+          <p className="portal-subheading mt-3">
+            Keep households, invitations, and event headcounts in one place. The couple sees the totals; you have the detail.
           </p>
         </div>
-        <a href={`/w/${wedding.slug}`} className="text-sm text-neutral-600 underline underline-offset-4">
+        <a href={`/w/${wedding.slug}`} className="portal-button-secondary" target="_blank" rel="noreferrer">
           View wedding site ↗
         </a>
       </header>
@@ -73,10 +75,10 @@ export default async function CommitteePage({
       {/* per-event summary strip */}
       <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-5">
         {summary.map((s) => (
-          <div key={s.eventId} className="rounded-lg border border-neutral-200 bg-white p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">{s.eventName}</p>
-            <p className="mt-2 text-2xl font-semibold tabular-nums">{s.attendingHeadcount}</p>
-            <p className="mt-1 text-xs text-neutral-500 tabular-nums">
+          <div key={s.eventId} className="portal-panel portal-stat">
+            <p className="portal-stat-label">{s.eventName}</p>
+            <p className="portal-stat-value tabular-nums">{s.attendingHeadcount}</p>
+            <p className="portal-stat-note tabular-nums">
               attending · {s.responded}/{s.invitedFamilies} families answered
             </p>
           </div>
@@ -88,6 +90,7 @@ export default async function CommitteePage({
         events={evs.map((e) => ({ id: e.id, name: e.name }))}
         rows={rows}
       />
+      </div>
     </main>
   );
 }

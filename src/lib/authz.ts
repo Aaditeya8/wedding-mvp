@@ -5,6 +5,13 @@ import { users } from "@/db/schema";
 
 export type Role = "admin" | "couple" | "committee";
 
+// Where each role lands when they open a door that isn't theirs
+const ROLE_HOME: Record<Role, string> = {
+  admin: "/admin",
+  couple: "/couple",
+  committee: "/committee",
+};
+
 // No self-signup: only pre-provisioned staff emails may sign in
 export async function isProvisionedStaff(email: string | null | undefined): Promise<boolean> {
   if (!email) return false;
@@ -18,6 +25,8 @@ export async function requireRole(allowed: Role[]) {
   const session = await auth();
   const u = session?.user as ({ id: string; role?: Role; weddingId?: string | null } | undefined);
   if (!u?.role) redirect("/signin");
-  if (!allowed.includes(u.role)) throw new Error("forbidden");
+  // Signed in but wrong area (e.g. couple opening /admin): bounce to their own
+  // dashboard rather than crashing the request with an unhandled throw.
+  if (!allowed.includes(u.role)) redirect(ROLE_HOME[u.role]);
   return { userId: u.id, role: u.role, weddingId: u.weddingId ?? null };
 }

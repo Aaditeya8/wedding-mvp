@@ -23,7 +23,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const dir = path.join(process.cwd(), "var/outbox");
           fs.mkdirSync(dir, { recursive: true });
           fs.appendFileSync(path.join(dir, "mail.jsonl"),
-            JSON.stringify({ to: identifier, subject: "Sign in", signInUrl: url }) + "\n");
+            JSON.stringify({ to: identifier, subject: "Sign in", signInUrl: url, at: new Date().toISOString() }) + "\n");
         },
       }),
     }),

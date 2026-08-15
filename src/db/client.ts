@@ -20,6 +20,16 @@ function makeDb() {
 const g = globalThis as unknown as { __db?: ReturnType<typeof makeDb> };
 export const db = (g.__db ??= makeDb());
 
+/**
+ * One-off scripts must close an on-disk PGlite instance before their process
+ * exits. This flushes the data directory and releases its single-process
+ * lock so a freshly started Next server sees the seeded schema.
+ */
+export async function closeDb() {
+  const client = (db as typeof db & { $client?: { close?: () => Promise<void> } }).$client;
+  await client?.close?.();
+}
+
 export async function migrateDb() {
   const { migrate } = url
     ? await import("drizzle-orm/neon-http/migrator")

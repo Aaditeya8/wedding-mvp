@@ -4,6 +4,9 @@ const PALETTES: Record<string, { bg: string; accent: string; text: string }> = {
   "ivory-editorial": { bg: "#faf8f4", accent: "#e8930c", text: "#232323" },
   "raj-mahal": { bg: "#2a0a10", accent: "#d4a439", text: "#f5ead6" },
   "gulaab-rococo": { bg: "#fdf2f6", accent: "#c2447a", text: "#4a2b3a" },
+  "mehfil-noor": { bg: "#0d1220", accent: "#a9bce0", text: "#e8ecf7" },
+  "pichwai-bagh": { bg: "#0e2b22", accent: "#e08cb2", text: "#f1e9d6" },
+  "neel-chhapa": { bg: "#f6f6f0", accent: "#31509f", text: "#22335e" },
 };
 
 export function InviteEmail(props: { familyName: string; coupleNames: string; rsvpUrl: string; theme: string }) {

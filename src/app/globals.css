@@ -7,6 +7,71 @@ body {
   font-family: var(--font-inter), ui-sans-serif, sans-serif;
 }
 
+/* ---- staff workspaces ---- */
+
+.portal-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top right, rgba(232, 147, 12, 0.1), transparent 28rem),
+    #f7f7f4;
+  color: #272624;
+}
+.portal-shell { margin-inline: auto; max-width: 80rem; padding: 3rem 1.5rem; }
+.portal-eyebrow {
+  color: #8a5c15;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.portal-heading { font-size: clamp(1.8rem, 4vw, 2.75rem); font-weight: 650; letter-spacing: -0.045em; }
+.portal-subheading { color: #74706a; font-size: 0.95rem; line-height: 1.55; }
+.portal-panel {
+  overflow: hidden;
+  border: 1px solid #e4e1db;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 1px 1px rgba(40, 35, 25, 0.03), 0 14px 38px -28px rgba(40, 35, 25, 0.3);
+}
+.portal-stat { min-height: 9.5rem; padding: 1.25rem; }
+.portal-stat-label { color: #807a72; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.portal-stat-value { margin-top: 0.7rem; font-size: 1.9rem; font-weight: 650; letter-spacing: -0.05em; line-height: 1; }
+.portal-stat-note { margin-top: 0.6rem; color: #827c74; font-size: 0.75rem; }
+.portal-button, .portal-button-secondary, .portal-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  line-height: 1;
+  transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.portal-button { min-height: 2.5rem; padding: 0.75rem 1rem; background: #292723; color: #fff; box-shadow: 0 8px 18px -12px rgba(41, 39, 35, 0.7); }
+.portal-button:hover { background: #444039; transform: translateY(-1px); }
+.portal-button-secondary { min-height: 2.5rem; border: 1px solid #dedad2; padding: 0.75rem 1rem; background: #fff; color: #57524a; }
+.portal-button-secondary:hover { border-color: #bdb6ac; background: #faf9f7; transform: translateY(-1px); }
+.portal-button:disabled, .portal-button-secondary:disabled { cursor: not-allowed; opacity: 0.45; transform: none; }
+.portal-link { color: #5f513c; font-size: 0.8125rem; font-weight: 650; text-decoration: underline; text-decoration-color: #d4b981; text-underline-offset: 0.3em; }
+.portal-link:hover { color: #2d2924; }
+.portal-badge { display: inline-flex; align-items: center; border: 1px solid #e0dcd5; border-radius: 999px; padding: 0.3rem 0.55rem; color: #716a61; font-size: 0.6875rem; font-weight: 650; line-height: 1; }
+.portal-table thead { border-bottom: 1px solid #e8e5df; background: #faf9f7; color: #807a72; font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.portal-table th { padding: 0.9rem 1rem; }
+.portal-table td { padding: 1rem; vertical-align: top; }
+.portal-table tbody tr { border-bottom: 1px solid #efede8; transition: background-color 0.2s ease; }
+.portal-table tbody tr:last-child { border-bottom: 0; }
+.portal-table tbody tr:hover { background: #fcfbf9; }
+.portal-input { width: 100%; border: 1px solid #d9d5cd; border-radius: 0.55rem; background: #fff; padding: 0.65rem 0.75rem; color: #2d2924; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+.portal-input:focus { border-color: #9d7a3e; box-shadow: 0 0 0 3px rgba(157, 122, 62, 0.14); }
+.portal-icon-button { width: 2.4rem; height: 2.4rem; border: 1px solid #dedad2; background: #fff; color: #625c54; }
+.portal-icon-button:hover { border-color: #bdb6ac; background: #faf9f7; }
+
+@media (max-width: 640px) {
+  .portal-shell { padding: 2rem 1rem; }
+  .portal-stat { min-height: 8.5rem; }
+  .portal-table th, .portal-table td { padding: 0.8rem; }
+}
+
 /* ---- themed-surface primitives (public site + rsvp page) ---- */
 
 .themed {
@@ -33,7 +98,7 @@ body {
   border-top: 1px solid var(--hairline);
 }
 
-/* ---- entrance & scroll reveals (CSS-only) ---- */
+/* ---- entrance animations (CSS-only, time-based) ---- */
 
 @keyframes rise {
   from { opacity: 0; transform: translateY(22px); }
@@ -48,15 +113,214 @@ body {
 .rise-3 { animation-delay: 0.34s; }
 .rise-4 { animation-delay: 0.5s; }
 
-/* Scroll-driven reveal where supported; sections simply visible elsewhere */
-@supports (animation-timeline: view()) {
-  .reveal {
-    animation: rise 1s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 42%;
-  }
+/* Letter-by-letter display-name reveal (hero). --i set per span in JSX. */
+@keyframes ltr {
+  from { opacity: 0; transform: translateY(0.32em) rotate(1.5deg); }
+  to { opacity: 1; transform: translateY(0) rotate(0); }
+}
+.ltr {
+  display: inline-block;
+  animation: ltr 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.2s + var(--i) * 45ms);
+}
+
+/* ---- scroll reveals ----
+   ScrollFx (client) adds .fx to <html>, then IntersectionObserver adds
+   .is-in per element. Hidden state exists ONLY under html.fx, so no-JS
+   readers and search bots always see content. --rd staggers siblings. */
+
+html.fx .reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--rd, 0s),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--rd, 0s);
+}
+html.fx .reveal[data-fx="left"] { transform: translateX(-30px); }
+html.fx .reveal[data-fx="right"] { transform: translateX(30px); }
+html.fx .reveal[data-fx="scale"] { transform: scale(0.94); }
+html.fx .reveal.is-in { opacity: 1; transform: none; }
+
+/* SVG ornament draw-on: strokes carry pathLength="1" so one rule fits all.
+   .draw-load runs on page load (hero); .draw waits for the observer. */
+.draw-load [pathLength], html.fx .draw [pathLength] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.draw-load [pathLength] {
+  animation: draw 1.5s ease 0.55s forwards;
+}
+html.fx .draw.is-in [pathLength] {
+  transition: stroke-dashoffset 1.6s ease 0.15s;
+  stroke-dashoffset: 0;
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* Hairline that grows in from the left instead of popping (timeline rows) */
+.rule-grow { position: relative; }
+.rule-grow::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: var(--hairline);
+  transform-origin: left center;
+}
+html.fx .rule-grow::before {
+  transform: scaleX(0);
+  transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) var(--rd, 0s);
+}
+html.fx .rule-grow.is-in::before { transform: scaleX(1); }
+
+/* ---- ambient motion ---- */
+
+/* Falling marigold petals (hero). Randomness lives in inline custom props. */
+@keyframes petal-fall {
+  0% { transform: translate3d(0, -6vh, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: var(--o, 0.5); }
+  100% { transform: translate3d(var(--drift, 4vw), 104vh, 0) rotate(var(--spin, 300deg)); opacity: 0; }
+}
+.petal {
+  position: absolute;
+  top: 0;
+  left: var(--x, 50%);
+  width: var(--sz, 14px);
+  height: var(--sz, 14px);
+  animation: petal-fall var(--dur, 14s) linear var(--delay, 0s) infinite;
+  will-change: transform;
+}
+
+/* Slow drift for the watermark ampersand; ScrollFx feeds --py on scroll */
+.parallax { transform: translate(-50%, calc(-50% + var(--py, 0px))); }
+
+/* Marquee band: track duplicated in JSX, loops half its own width */
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee { overflow: hidden; }
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 30s linear infinite;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+
+/* Foil-leaf shimmer on display text (hero ampersand, RSVP band) */
+@keyframes foil-sweep { to { background-position: -200% center; } }
+.foil {
+  background: linear-gradient(105deg, var(--accent-2), var(--accent) 38%, var(--accent-2) 52%, var(--accent) 72%, var(--accent-2));
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: foil-sweep 7s linear infinite;
+  /* italic swashes overhang the glyph box; pad (and pull back) so
+     background-clip still paints them instead of cutting them off */
+  padding: 0.15em 0.2em;
+  margin: -0.15em -0.2em;
+}
+
+/* Hero ampersand: run the letter-cascade entrance AND the shimmer —
+   each class alone would override the other's animation shorthand */
+.foil.ltr {
+  animation:
+    ltr 0.8s cubic-bezier(0.22, 1, 0.36, 1) both,
+    foil-sweep 7s linear infinite;
+  animation-delay: calc(0.2s + var(--i) * 45ms), 0s;
+}
+
+/* Scroll cue: a thin line that keeps dropping */
+@keyframes cue-drop {
+  0% { transform: scaleY(0); transform-origin: top; }
+  45% { transform: scaleY(1); transform-origin: top; }
+  55% { transform: scaleY(1); transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+.scroll-cue {
+  width: 1px;
+  height: 44px;
+  background: var(--ink-soft);
+  animation: cue-drop 2.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+/* ---- surfaces & cards ---- */
+
+/* Scalloped gota edge: bumps in currentColor sit on the section above */
+.scallop {
+  height: 12px;
+  color: var(--band-bg);
+  background: radial-gradient(circle 8px at 12px 12px, currentColor 7.5px, transparent 8px);
+  background-size: 24px 12px;
+}
+
+/* Mounted card: outer rule + inset hairline + faint bandhani dot field */
+.card-mount {
+  position: relative;
+  background:
+    radial-gradient(var(--hairline) 1px, transparent 1.5px) 0 0 / 22px 22px,
+    var(--surface);
+  border: 1px solid var(--hairline);
+  box-shadow: 0 0 0 0 transparent;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s, border-color 0.5s;
+}
+.card-mount::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1px solid var(--hairline);
+  pointer-events: none;
+  transition: border-color 0.5s;
+}
+.card-mount:hover {
+  transform: translateY(-5px);
+  border-color: var(--accent);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.28);
+}
+.card-mount:hover::after { border-color: var(--accent); }
+
+/* Gallery plates: matted frame + lazy lift */
+.plate {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  padding: 10px;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.55s, border-color 0.55s;
+}
+.plate:hover {
+  transform: translateY(-6px) rotate(-0.6deg);
+  border-color: var(--accent);
+  box-shadow: 0 20px 44px -20px rgba(0, 0, 0, 0.3);
+}
+
+/* Tapered section-header rule: fades out so it never doubles a border */
+.rule-taper {
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent) 0, var(--hairline) 90px, transparent 100%);
+}
+
+/* Our story: one flowing passage in the couple's own words, set large in the
+   display face. A hanging quote mark is the only decoration — the words carry it. */
+.story-passage { position: relative; }
+.story-quote {
+  position: absolute;
+  top: -0.45em;
+  left: -0.06em;
+  font-size: clamp(5rem, 10vw, 8rem);
+  line-height: 1;
+  color: var(--accent);
+  opacity: 0.32;
+  pointer-events: none;
+  user-select: none;
+}
+.story-text {
+  position: relative;
+  font-size: clamp(1.7rem, 3.4vw, 2.7rem);
+  line-height: 1.32;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise, .reveal { animation: none; }
+  .rise, .reveal, .ltr, .petal, .marquee-track, .foil, .foil.ltr, .scroll-cue,
+  .draw-load [pathLength] { animation: none; }
+  html.fx .reveal, html.fx .rule-grow::before { opacity: 1; transform: none; transition: none; }
+  html.fx .draw [pathLength], .draw-load [pathLength] { stroke-dasharray: none; stroke-dashoffset: 0; }
 }

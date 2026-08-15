@@ -5,9 +5,14 @@ Ten minutes, seven beats. Rehearse once the night before.
 ## Pre-demo setup (do once, ~30 min)
 
 ### 1. Swap staff emails
-In `scripts/seed.ts`, replace the four `STAFF_EMAILS` entries with the founders'
-real addresses (Aadi = admin, one couple, two committee). Magic-link sign-in
-only works for provisioned addresses.
+The seed ships `@example.com` placeholders. Set `SEED_STAFF_EMAILS` to five real
+comma-separated addresses in role order — `admin, couple, committee, committee,
+couple-of-the-second-wedding` — before seeding. Magic-link sign-in only works for
+provisioned addresses.
+
+```bash
+SEED_STAFF_EMAILS='you@gmail.com,you+couple@gmail.com,you+chachu@gmail.com,you+planner@gmail.com,you+karishma@gmail.com' npm run seed
+```
 
 ### 2. Neon (free tier)
 1. console.neon.tech → new project → copy the **pooled** connection string.

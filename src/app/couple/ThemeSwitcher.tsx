@@ -3,46 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { setTheme } from "./actions";
+import { THEMES, THEME_META, type Theme } from "@/themes/catalog";
 
-type Theme = "ivory-editorial" | "raj-mahal" | "gulaab-rococo";
-
-const SWATCHES: {
-  theme: Theme;
-  label: string;
-  tagline: string;
-  bg: string;
-  ink: string;
-  dots: string[];
-  fontVar: string;
-}[] = [
-  {
-    theme: "ivory-editorial",
-    label: "Ivory Editorial",
-    tagline: "Modern minimal — quiet luxury",
-    bg: "#faf8f4",
-    ink: "#232323",
-    dots: ["#faf8f4", "#232323", "#e8930c"],
-    fontVar: "var(--font-instrument)",
-  },
-  {
-    theme: "raj-mahal",
-    label: "Raj Mahal",
-    tagline: "Royal heritage — maroon & gold",
-    bg: "#2a0a10",
-    ink: "#f5ead6",
-    dots: ["#2a0a10", "#d4a439", "#1c2145"],
-    fontVar: "var(--font-cormorant)",
-  },
-  {
-    theme: "gulaab-rococo",
-    label: "Gulaab Rococo",
-    tagline: "Romantic — blush & rani pink",
-    bg: "#fdf2f6",
-    ink: "#4a2b3a",
-    dots: ["#fdf2f6", "#c2447a", "#8b7ab8"],
-    fontVar: "var(--font-fraunces)",
-  },
-];
+const SWATCHES = THEMES.map((theme) => ({ theme, ...THEME_META[theme] }));
 
 export function ThemeSwitcher({
   weddingId,

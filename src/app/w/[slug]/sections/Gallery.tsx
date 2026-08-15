@@ -13,18 +13,23 @@ export function Gallery({ theme: _theme }: { theme: string }) {
   return (
     <section className="mx-auto max-w-5xl px-6 py-24 md:py-32">
       <SectionHeader no="04" title="Gallery" />
-      <div className="columns-2 gap-4 md:columns-3 md:gap-6 [&>img]:mb-4 md:[&>img]:mb-6">
-        {PLATES.map((p) => (
-          <img
+      <div className="columns-2 gap-4 md:columns-3 md:gap-6 [&>div]:mb-4 md:[&>div]:mb-6">
+        {PLATES.map((p, i) => (
+          <div
             key={p.src}
-            src={p.src}
-            alt={p.alt}
-            width={600}
-            height={p.tall ? 780 : 600}
-            loading="lazy"
-            className="reveal w-full"
-            style={{ border: "1px solid var(--hairline)" }}
-          />
+            className="reveal plate break-inside-avoid"
+            data-fx="scale"
+            style={{ "--rd": `${(i % 3) * 0.1}s` } as React.CSSProperties}
+          >
+            <img
+              src={p.src}
+              alt={p.alt}
+              width={600}
+              height={p.tall ? 780 : 600}
+              loading="lazy"
+              className="w-full"
+            />
+          </div>
         ))}
       </div>
       <p className="reveal kicker mt-8 text-center">Photographs arrive after the haldi</p>

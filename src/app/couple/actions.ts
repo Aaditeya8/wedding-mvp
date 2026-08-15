@@ -6,9 +6,10 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { weddings } from "@/db/schema";
 import { requireRole } from "@/lib/authz";
+import { THEMES } from "@/themes/catalog";
 
 const schema = z.object({
-  theme: z.enum(["ivory-editorial", "raj-mahal", "gulaab-rococo"]),
+  theme: z.enum(THEMES),
   weddingId: z.string().uuid(),
 });
 

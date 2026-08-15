@@ -17,7 +17,12 @@ export function EventTimeline({ theme: _theme, events }: { theme: string; events
       <SectionHeader no="02" title="The Celebrations" />
       <ol>
         {events.map((e, i) => (
-          <li key={e.id} className="reveal hairline-t grid gap-4 py-10 md:grid-cols-12 md:gap-8">
+          <li
+            key={e.id}
+            /* first row skips its rule: the header's taper already closes that gap */
+            className={`reveal grid gap-4 py-10 md:grid-cols-12 md:gap-8 ${i > 0 ? "rule-grow" : ""}`}
+            style={{ "--rd": `${(i % 3) * 0.12}s` } as React.CSSProperties}
+          >
             <span
               className="font-display text-2xl md:col-span-1 md:text-3xl"
               style={{ color: "var(--ink-soft)", opacity: 0.55 }}

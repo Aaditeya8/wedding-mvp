@@ -1,6 +1,6 @@
 import { pgTable, pgEnum, text, integer, timestamp, uuid, primaryKey, uniqueIndex } from "drizzle-orm/pg-core";
 
-export const themeEnum = pgEnum("theme", ["ivory-editorial", "raj-mahal", "gulaab-rococo"]);
+export const themeEnum = pgEnum("theme", ["ivory-editorial", "raj-mahal", "gulaab-rococo", "mehfil-noor", "pichwai-bagh", "neel-chhapa"]);
 export const sideEnum = pgEnum("side", ["bride", "groom", "both"]);
 export const roleEnum = pgEnum("role", ["admin", "couple", "committee"]);
 export const rsvpStatusEnum = pgEnum("rsvp_status", ["attending", "declined"]);

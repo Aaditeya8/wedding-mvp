@@ -63,42 +63,45 @@ export function FamilyTable({
 
   return (
     <section>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="portal-panel mb-4 flex flex-wrap items-center justify-between gap-3 p-3">
+        <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => setEditing("new")}
-          className="rounded-md bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-700"
+          className="portal-button"
         >
-          + Add family
+          Add family
         </button>
-        <div className="mx-2 h-5 w-px bg-neutral-200" />
+        <div className="mx-1 hidden h-6 w-px bg-neutral-200 sm:block" />
         <button
           disabled={!ids.length || pending}
           onClick={() => send("invite", ids)}
-          className="rounded-md border border-neutral-300 px-3 py-2 text-sm disabled:opacity-40"
+          className="portal-button-secondary"
         >
           Send invites
         </button>
         <button
           disabled={!ids.length || pending}
           onClick={() => send("resend", ids)}
-          className="rounded-md border border-neutral-300 px-3 py-2 text-sm disabled:opacity-40"
+          className="portal-button-secondary"
         >
-          Resend (new link)
+          Resend link
         </button>
         <button
           disabled={!ids.length || pending}
           onClick={() => send("remind", ids)}
-          className="rounded-md border border-neutral-300 px-3 py-2 text-sm disabled:opacity-40"
+          className="portal-button-secondary"
         >
-          Remind non-responders
+          Send reminder
         </button>
-        {pending && <span className="text-sm text-neutral-400">sending…</span>}
-        {flash && <span className="text-sm text-neutral-600">{flash}</span>}
+        </div>
+        <p className="text-xs font-medium text-neutral-500" aria-live="polite">
+          {pending ? "Sending…" : flash ?? (ids.length ? `${ids.length} household${ids.length === 1 ? "" : "s"} selected` : "Select households to email")}
+        </p>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
-        <table className="w-full text-left text-sm">
-          <thead className="border-b border-neutral-200 bg-neutral-50 text-xs uppercase tracking-wide text-neutral-500">
+      <div className="portal-panel overflow-x-auto">
+        <table className="portal-table w-full min-w-[66rem] text-left text-sm">
+          <thead>
             <tr>
               <th className="p-3">
                 <input
@@ -118,10 +121,10 @@ export function FamilyTable({
               <th className="p-3" />
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100">
+          <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="align-top hover:bg-neutral-50">
-                <td className="p-3">
+              <tr key={r.id}>
+                <td>
                   <input
                     type="checkbox"
                     aria-label={`Select ${r.name}`}
@@ -129,18 +132,18 @@ export function FamilyTable({
                     onChange={() => toggle(r.id)}
                   />
                 </td>
-                <td className="p-3">
+                <td>
                   <p className="font-medium">{r.name}</p>
-                  <p className="mt-0.5 text-xs text-neutral-500">
-                    <span className={`mr-1 inline-block rounded border px-1.5 py-0.5 ${SIDE_BADGE[r.side]}`}>
+                  <p className="mt-1 text-xs text-neutral-500">
+                    <span className={`mr-1 inline-block rounded border px-1.5 py-0.5 font-medium ${SIDE_BADGE[r.side]}`}>
                       {r.side}
                     </span>
                     {r.relation}
                   </p>
                 </td>
-                <td className="p-3 text-neutral-600">{r.email}</td>
-                <td className="p-3 tabular-nums">{r.members.length}</td>
-                <td className="p-3">
+                <td className="text-neutral-600">{r.email}</td>
+                <td className="tabular-nums">{r.members.length}</td>
+                <td>
                   <div className="flex flex-wrap gap-1.5">
                     {events.map((e) => {
                       const invited = r.eventIds.includes(e.id);
@@ -150,7 +153,7 @@ export function FamilyTable({
                         <span
                           key={e.id}
                           title={`${e.name}: ${rsvp ? (rsvp.status === "attending" ? `${rsvp.headcount} attending` : "declined") : "no answer yet"}${rsvp?.note ? ` — “${rsvp.note}”` : ""}`}
-                          className={`rounded border px-1.5 py-0.5 text-xs ${
+                          className={`rounded-full border px-2 py-1 text-xs font-medium ${
                             rsvp
                               ? rsvp.status === "attending"
                                 ? "border-green-200 bg-green-50 text-green-700"
@@ -164,14 +167,14 @@ export function FamilyTable({
                     })}
                   </div>
                 </td>
-                <td className="p-3">
+                <td>
                   {r.lastEmail ? (
                     r.lastEmail.status === "sent" ? (
-                      <span className="text-xs text-neutral-500">
+                      <span className="portal-badge">
                         {r.lastEmail.type} · sent
                       </span>
                     ) : (
-                      <span className="text-xs text-red-600">
+                      <span className="text-xs font-medium text-red-600">
                         failed
                         <button
                           disabled={pending}
@@ -186,7 +189,7 @@ export function FamilyTable({
                     <span className="text-xs text-neutral-400">never</span>
                   )}
                 </td>
-                <td className="p-3 text-right">
+                <td className="text-right">
                   <button
                     onClick={() =>
                       setEditing({
@@ -199,7 +202,7 @@ export function FamilyTable({
                         eventIds: r.eventIds,
                       })
                     }
-                    className="text-xs text-neutral-500 underline underline-offset-2 hover:text-neutral-900"
+                    className="portal-link"
                   >
                     edit
                   </button>
@@ -208,7 +211,7 @@ export function FamilyTable({
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-sm text-neutral-400">
+                <td colSpan={7} className="p-10 text-center text-sm text-neutral-400">
                   No families yet — add the first one.
                 </td>
               </tr>

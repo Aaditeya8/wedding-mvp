@@ -1,10 +1,21 @@
-import { db, migrateDb } from "@/db/client";
+import { closeDb, db, migrateDb } from "@/db/client";
 import { weddings, events, families, guests, eventInvites, rsvps, users } from "@/db/schema";
 import { generateInviteToken, tokenExpiry } from "@/lib/tokens";
-import { eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-// Before the demo, replace these with the four founders' real addresses so magic-link sign-in works.
-const STAFF_EMAILS = ["aadi@example.com", "couple@example.com", "committee1@example.com", "committee2@example.com"];
+// Seeded staff logins in role order: [admin, couple, committee, committee], plus a
+// second couple for the second wedding. Override with SEED_STAFF_EMAILS (comma-separated,
+// 5 entries) when you want real magic links — Gmail plus-aliases (you+couple@gmail.com…)
+// let a single inbox receive every role's sign-in mail.
+const DEFAULT_STAFF_EMAILS = [
+  "admin@example.com",
+  "couple@example.com",
+  "committee@example.com",
+  "planner@example.com",
+  "couple2@example.com",
+];
+const OVERRIDE_EMAILS = process.env.SEED_STAFF_EMAILS?.split(",").map((e) => e.trim()) ?? [];
+const STAFF_EMAILS = DEFAULT_STAFF_EMAILS.map((fallback, i) => OVERRIDE_EMAILS[i] || fallback);
 
 const WEDDING_DATE = new Date("2026-11-20T10:00:00+05:30");
 
@@ -32,12 +43,35 @@ const FAMILIES: [string, "bride" | "groom" | "both", string, string, string[], b
   ["The D'Souzas", "both", "Childhood friends", "dsouza@example.com", ["Maria D'Souza", "Kevin D'Souza"], false],
 ];
 
+// Second demo wedding — shows the platform is multi-tenant and carries the new themes.
+const GK_WEDDING_DATE = new Date("2026-12-11T10:00:00+05:30");
+
+const GK_EVENTS = [
+  { name: "Mehendi", startsAt: "2026-12-09T16:00:00+05:30", venueName: "Malhotra Farmhouse", address: "Chattarpur, New Delhi", dressCode: "Greens", sortOrder: 0 },
+  { name: "Sangeet", startsAt: "2026-12-10T19:00:00+05:30", venueName: "The Leela Palace Lawns", address: "Chanakyapuri, New Delhi", dressCode: "Shimmer & silk", sortOrder: 1 },
+  { name: "Pheras", startsAt: "2026-12-11T10:00:00+05:30", venueName: "Jagmandir Island Palace", address: "Lake Pichola, Udaipur", dressCode: "Traditional", sortOrder: 2 },
+  { name: "Reception", startsAt: "2026-12-11T19:30:00+05:30", venueName: "Taj Fateh Prakash Ballroom", address: "City Palace Road, Udaipur", dressCode: "Formal", sortOrder: 3 },
+];
+
+const GK_FAMILIES: [string, "bride" | "groom" | "both", string, string, string[], boolean][] = [
+  ["Malhotra Family", "bride", "Karishma's parents", "malhotra@example.com", ["Deepak Malhotra", "Ritu Malhotra"], true],
+  ["Saxena Family", "groom", "Gaurav's parents", "saxena@example.com", ["Ashok Saxena", "Poonam Saxena"], true],
+  ["Masi's Family", "bride", "Karishma's masi", "masi@example.com", ["Anita Chopra", "Vinod Chopra", "Sana Chopra"], true],
+  ["Tau ji & Family", "groom", "Gaurav's tau ji", "tauji@example.com", ["Rakesh Saxena", "Usha Saxena", "Mohit Saxena"], false],
+  ["The Bedis", "both", "Family friends", "bedi@example.com", ["Harpreet Bedi", "Simran Bedi"], false],
+  ["Karishma's Design Studio", "bride", "Colleagues", "studio@example.com", ["Tara Menon", "Vivaan Shah", "Diya Paul"], false],
+];
+
 async function main() {
   await migrateDb();
-  // Staff users reference the wedding without cascade — remove them first for idempotency
-  await db.delete(users).where(inArray(users.email, STAFF_EMAILS));
-  const existing = await db.select().from(weddings).where(eq(weddings.slug, "ananya-weds-arjun"));
-  if (existing[0]) await db.delete(weddings).where(eq(weddings.id, existing[0].id));
+  // Seed is the only provisioning path, so it owns the users table outright.
+  // (Deleting by STAFF_EMAILS broke idempotency the moment the list changed:
+  // old rows survived and their wedding FK blocked the wedding delete below.)
+  await db.delete(users);
+  for (const slug of ["ananya-weds-arjun", "gaurav-weds-karishma"]) {
+    const existing = await db.select().from(weddings).where(eq(weddings.slug, slug));
+    if (existing[0]) await db.delete(weddings).where(eq(weddings.id, existing[0].id));
+  }
 
   const [w] = await db.insert(weddings).values({
     slug: "ananya-weds-arjun", brideName: "Ananya", groomName: "Arjun",
@@ -73,13 +107,56 @@ async function main() {
     console.log(`${name}: ${process.env.APP_URL ?? "http://localhost:3000"}/rsvp/${token}`);
   }
 
+  const [w2] = await db.insert(weddings).values({
+    slug: "gaurav-weds-karishma", brideName: "Karishma", groomName: "Gaurav",
+    theme: "pichwai-bagh", weddingDate: GK_WEDDING_DATE,
+    heroTagline: "A Delhi love story, sealed on a lake in Udaipur.",
+    story: "Matched by an aunty, ignored the aunty, then matched again by an app three years later. Some things are just written — this one twice.",
+  }).returning();
+
+  const gkEvs = await db.insert(events).values(
+    GK_EVENTS.map((e) => ({ ...e, weddingId: w2.id, startsAt: new Date(e.startsAt) })),
+  ).returning();
+  const gkMain = gkEvs.filter((e) => ["Sangeet", "Pheras", "Reception"].includes(e.name));
+
+  for (const [name, side, relation, email, members, close] of GK_FAMILIES) {
+    const { token, tokenHash } = generateInviteToken();
+    const [f] = await db.insert(families).values({
+      weddingId: w2.id, name, side, relation, email,
+      inviteTokenHash: tokenHash, tokenExpiresAt: tokenExpiry(GK_WEDDING_DATE),
+    }).returning();
+    await db.insert(guests).values(members.map((m) => ({ familyId: f.id, fullName: m })));
+    const invited = close ? gkEvs : gkMain;
+    await db.insert(eventInvites).values(invited.map((e) => ({ eventId: e.id, familyId: f.id })));
+    // First 3 families pre-answered so the second dashboard isn't empty
+    const idx = GK_FAMILIES.findIndex((x) => x[0] === name);
+    if (idx < 3) {
+      await db.insert(rsvps).values(invited.map((e) => ({
+        eventId: e.id, familyId: f.id, status: "attending" as const, headcount: members.length,
+      })));
+    }
+    console.log(`${name}: ${process.env.APP_URL ?? "http://localhost:3000"}/rsvp/${token}`);
+  }
+
   await db.insert(users).values([
     { email: STAFF_EMAILS[0], name: "Aadi", role: "admin" as const },
     { email: STAFF_EMAILS[1], name: "Ananya", role: "couple" as const, weddingId: w.id },
     { email: STAFF_EMAILS[2], name: "Rohit (Chachu)", role: "committee" as const, weddingId: w.id },
     { email: STAFF_EMAILS[3], name: "Wedding Planner", role: "committee" as const, weddingId: w.id },
+    { email: STAFF_EMAILS[4], name: "Karishma", role: "couple" as const, weddingId: w2.id },
   ]);
-  console.log("Seeded ananya-weds-arjun ✔");
+  console.log("Seeded ananya-weds-arjun + gaurav-weds-karishma ✔");
 }
 
-main().then(() => process.exit(0));
+async function run() {
+  try {
+    await main();
+  } catch (error) {
+    console.error(error);
+    process.exitCode = 1;
+  } finally {
+    await closeDb();
+  }
+}
+
+void run();

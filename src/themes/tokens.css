@@ -30,6 +30,53 @@
   --font-body: var(--font-inter), ui-sans-serif, sans-serif;
 }
 
+/* Moonlit Lucknowi mehfil: midnight indigo, moon silver, antique gold.
+   Signature: the RSVP band inverts to pale moonlight — the only theme
+   whose band is lighter than the page. */
+[data-theme="mehfil-noor"] {
+  --bg: #0d1220;
+  --surface: #161d31;
+  --ink: #e8ecf7;
+  --ink-soft: #8f9cbd;
+  --accent: #a9bce0;
+  --accent-2: #d3aa5e;
+  --hairline: rgba(169, 188, 224, 0.26);
+  --band-bg: #e3e9f6;
+  --band-ink: #111731;
+  --font-display: var(--font-marcellus), Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, sans-serif;
+}
+
+/* Pichwai painting: emerald garden ground, lotus pink, gold linework */
+[data-theme="pichwai-bagh"] {
+  --bg: #0e2b22;
+  --surface: #16382c;
+  --ink: #f1e9d6;
+  --ink-soft: #9db6a4;
+  --accent: #e08cb2;
+  --accent-2: #c9a145;
+  --hairline: rgba(201, 161, 69, 0.3);
+  --band-bg: #571f3a;
+  --band-ink: #f7e9f0;
+  --font-display: var(--font-rozha), Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, sans-serif;
+}
+
+/* Jaipur block print: porcelain paper, indigo ink (not black), madder stamp */
+[data-theme="neel-chhapa"] {
+  --bg: #f6f6f0;
+  --surface: #ffffff;
+  --ink: #22335e;
+  --ink-soft: #66739b;
+  --accent: #31509f;
+  --accent-2: #b8492d;
+  --hairline: rgba(34, 51, 94, 0.2);
+  --band-bg: #24396e;
+  --band-ink: #eef1fb;
+  --font-display: var(--font-prata), Georgia, serif;
+  --font-body: var(--font-inter), ui-sans-serif, sans-serif;
+}
+
 /* Romantic rococo: blush ground, rani pink, lavender counterpoint */
 [data-theme="gulaab-rococo"] {
   --bg: #fdf2f6;

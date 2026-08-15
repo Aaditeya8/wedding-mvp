@@ -6,7 +6,10 @@ export default defineConfig({
   use: { baseURL: "http://localhost:3000" },
   webServer: {
     command: "npm run dev",
-    url: "http://localhost:3000",
+    // Readiness must NOT touch the database: / redirects into /w/[slug],
+    // and hammering a PGlite-backed route during first compile aborts the
+    // instance. A static asset only answers once the server is truly up.
+    url: "http://localhost:3000/favicon.ico",
     // On-disk PGlite allows ONE process: globalSetup seeds before this server
     // starts, so never reuse a dev server that already holds the data dir.
     reuseExistingServer: false,
