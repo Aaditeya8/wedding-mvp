@@ -41,7 +41,8 @@ export function ImportWizard({
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [mapping, setMapping] = useState<Mapping | null>(null);
   const [answers, setAnswers] = useState<Answers>({});
-  const [rows, setRows] = useState<ImportRow[]>(initialMode === "direct" ? [blankRow(1), blankRow(2), blankRow(3)] : []);
+  const allEvents = events.map((e) => e.id);
+  const [rows, setRows] = useState<ImportRow[]>(initialMode === "direct" ? [blankRow(1, allEvents), blankRow(2, allEvents), blankRow(3, allEvents)] : []);
   const [stats, setStats] = useState<BuildStats | null>(null);
   const [existsCount, setExistsCount] = useState(0);
   const [onExisting, setOnExisting] = useState<OnExisting>("merge");
@@ -55,7 +56,7 @@ export function ImportWizard({
   function reset(nextMode: Mode) {
     setMode(nextMode);
     setFile(null); setAnalysis(null); setMapping(null); setAnswers({});
-    setRows(nextMode === "direct" ? [blankRow(1), blankRow(2), blankRow(3)] : []);
+    setRows(nextMode === "direct" ? [blankRow(1, allEvents), blankRow(2, allEvents), blankRow(3, allEvents)] : []);
     setStats(null); setExistsCount(0); setOnExisting("merge"); setScanInfo(null); setChecked(false); setFlash(null);
     setResult(null); setError(null);
     setStep(nextMode === "direct" ? "review" : nextMode === "scan" ? "scan" : "upload");
