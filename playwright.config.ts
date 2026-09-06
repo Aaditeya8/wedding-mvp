@@ -1,23 +1,27 @@
 import { defineConfig } from "@playwright/test";
 
 // PORT=3001 npm run e2e — when something else already owns :3000.
-// global-setup seeds with the matching APP_URL so captured RSVP links agree.
 const port = process.env.PORT ?? "3000";
+
+// The seed runs INSIDE the web-server command, before `next dev` starts: on-disk
+// PGlite is single-process, and Playwright launches the web server before
+// globalSetup, so seeding there raced the dev server opening the data dir.
+// An unclean shutdown can leave the dir unrecoverable, hence the rm -rf first.
+const seed = `rm -rf var/pglite && APP_URL=http://localhost:${port} npx tsx --env-file=.env scripts/seed.ts > var/e2e-seed.txt`;
 
 export default defineConfig({
   testDir: "tests/e2e",
-  globalSetup: "./tests/e2e/global-setup.ts",
   use: { baseURL: `http://localhost:${port}` },
   webServer: {
-    command: `npm run dev -- -p ${port}`,
+    command: `${seed} && npm run dev -- -p ${port}`,
     // Readiness must NOT touch the database: / redirects into /w/[slug],
     // and hammering a PGlite-backed route during first compile aborts the
     // instance. A static asset only answers once the server is truly up.
     url: `http://localhost:${port}/favicon.ico`,
-    // On-disk PGlite allows ONE process: globalSetup seeds before this server
-    // starts, so never reuse a dev server that already holds the data dir.
+    // Never reuse a dev server that already holds the data dir.
     reuseExistingServer: false,
     env: { EMAIL_MODE: "file" },
+    timeout: 120_000,
   },
   projects: [{ name: "chromium", use: { browserName: "chromium" } }],
 });

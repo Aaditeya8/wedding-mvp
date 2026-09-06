@@ -33,7 +33,10 @@
   invented names only; the real file lives in `var/` (gitignored).
 - ⚠️ AI/vision paths exercised only with a fake provider; set `AI_API_KEY` to try a photo.
 - ⚠️ PGlite corrupted twice today after e2e/dev-server teardown — `npm run db:reset` each
-  time. The local DB currently holds seed + the real list's households; reset before demoing.
+  time. Root cause of the flaky e2e found and fixed: Playwright launches `webServer`
+  *before* `globalSetup`, so the seed raced the dev server opening `var/pglite`. The seed
+  now runs inside `webServer.command` ahead of `next dev` (`tests/e2e/global-setup.ts`
+  removed); two consecutive green runs. The local DB is a fresh seed after e2e.
 
 # Status — 6 September 2026
 
