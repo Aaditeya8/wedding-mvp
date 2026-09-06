@@ -1,3 +1,30 @@
+# Status — 6 September 2026
+
+## Guest intake portal (`feat/guest-intake`, verified in browser, all suites green)
+
+- **`/committee/import`**: two paths, one write. *Upload* (xlsx/xls/csv, ≤ 4 MB) → header-row
+  detection, per-column profiling (kind, fill rate, 5 samples) → mapping proposal → the
+  questions the sheet can't answer (household vs person per row, how to group, default
+  events, missing emails) → editable review grid with flags → import. *Type it in* opens
+  the same grid empty. Nothing is written until the final click.
+- **Two matching engines.** `heuristic.ts` (header synonyms incl. Hindi/Hinglish, value
+  kinds, per-event yes/no columns, "Wedding"→Pheras / "Mehndi"→Mehendi) always runs;
+  `ai.ts` refines it over an OpenAI-compatible seam (`src/lib/ai.ts`, Groq + gpt-oss-120b
+  by default, `AI_API_KEY` to enable) and only ever sees headers + ≤ 5 samples per column.
+  No key or a bad reply → heuristic result, badge says so.
+- **Commit rules**: duplicate = same email within the wedding (skip by default, update
+  opt-in); rows without email are importable and flagged; `issueInvites` now skips
+  email-less households with `error: "no email"`. Default sheet = the one with the most
+  cells (workbooks open with cover sheets).
+- **Docs**: `docs/HOW-IT-WORKS.md` (plain-language guide for non-devs), spec + plan under
+  `docs/superpowers/`, README + `.env.example` updated.
+- Validation: 71 unit ✅ (52 new under `tests/unit/import/`), tsc ✅, build ✅, browser pass
+  on port 3001 — 15-row per-guest planner sheet → 7 households (6 added, 1 skipped as
+  existing), family-per-row CSV through the pipeline, direct entry of one household.
+  Sample sheets: `var/sample-guests.xlsx`, `var/sample-families.csv`.
+- ⚠️ AI path exercised only with a fake provider in tests — set `AI_API_KEY` in `.env`
+  and re-upload `var/sample-guests.xlsx` to see the "Matched by AI" badge and notes.
+
 # Status — 2 August 2026
 
 ## Story + ampersand pass (later same day)

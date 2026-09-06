@@ -17,6 +17,11 @@ real enough to put in front of a paying couple.
   hashes and expire a week after the wedding.
 - **Committee dashboard** — `/committee`. Add and edit families and their guests, send
   invites, resend, chase non-responders, per-event totals.
+- **Guest intake** — `/committee/import`. Upload the guest list as it already exists
+  (xlsx/xls/csv): the portal detects the header row, profiles every column, proposes how
+  they map onto households/guests/side/email/events (AI-assisted when a key is set, name-
+  based otherwise), asks the questions the sheet can't answer, and shows an editable review
+  grid before anything is written. The same grid doubles as direct entry.
 - **Couple dashboard** — `/couple`. RSVP stats, who hasn't replied, and a live theme
   switcher for their own site.
 - **Admin** — `/admin`. All weddings, staff, delivery log, plus `/admin/mailroom`, an
@@ -29,6 +34,9 @@ real enough to put in front of a paying couple.
 Next.js 16 (App Router, React Server Components, Server Actions) · React 19 · TypeScript ·
 Tailwind CSS v4 · Drizzle ORM · Postgres (PGlite locally, Neon in production) · Auth.js v5
 magic links · Zod · React Email + Nodemailer · Vitest + Playwright.
+
+**New to frontend/backend?** Start with [`docs/HOW-IT-WORKS.md`](docs/HOW-IT-WORKS.md) — a
+plain-language walkthrough of the product, the data, and how to run and demo it.
 
 **Why this stack, and how it compares to MERN:** [`docs/FRAMEWORK.md`](docs/FRAMEWORK.md) —
 also as a formatted document, [`docs/FRAMEWORK.pdf`](docs/FRAMEWORK.pdf) (7 pages, rendered
@@ -70,7 +78,7 @@ provisioned user row, so the seed is the only provisioning path.
 | `npm run build` | Production build (uses a throwaway in-memory DB) |
 | `npm run seed` | Migrate + reseed both demo weddings, print RSVP links |
 | `npm run db:reset` | Delete `var/pglite` and reseed from scratch |
-| `npm test` | Vitest unit suite (19 tests) |
+| `npm test` | Vitest unit suite (71 tests) |
 | `npm run e2e` | Playwright end-to-end guest RSVP flow |
 
 ### Environment
@@ -84,6 +92,8 @@ provisioned user row, so the seed is the only provisioning path.
 | `SMTP_USER` / `SMTP_PASS` | Gmail address + app password, when `EMAIL_MODE=smtp` |
 | `EMAIL_FROM` | Display sender, e.g. `"Ananya & Arjun <you@gmail.com>"` |
 | `SEED_STAFF_EMAILS` | Optional. Five comma-separated staff logins for the seed. |
+| `AI_API_KEY` | Optional. Enables AI column matching in the import. Any OpenAI-compatible provider. |
+| `AI_BASE_URL` / `AI_MODEL` | Optional. Default `https://api.groq.com/openai/v1` / `openai/gpt-oss-120b`. |
 
 ## Layout
 
@@ -94,10 +104,12 @@ src/
     rsvp/[token]/    guest RSVP page and server action
     couple/          couple dashboard
     committee/       guest operations
+      import/        spreadsheet / direct-entry intake wizard
     admin/           overview, per-wedding detail, mailroom
     signin/          magic-link sign-in
   db/                Drizzle schema + the PGlite/Neon client switch
-  lib/               rsvp, invites, tokens, mailer, authz, ratelimit
+  lib/               rsvp, invites, tokens, mailer, authz, ratelimit, ai (chat seam)
+    import/          spreadsheet parse → profile → heuristic/AI mapping → normalise → commit
   themes/            theme catalog, CSS custom-property tokens, SVG ornaments
   emails/            React Email invite template
   auth.ts            Auth.js config (Drizzle adapter, Nodemailer provider)
@@ -124,7 +136,8 @@ actually be read.
 
 ## Status
 
-Feature-complete for the pilot demo and verified in a browser: 19 unit tests, a Playwright
-RSVP happy path, and a clean production build. Not yet deployed. `docs/DEMO-RUNBOOK.md`
+Feature-complete for the pilot demo and verified in a browser: 71 unit tests, a Playwright
+RSVP happy path, and a clean production build. Guest intake (spreadsheet + direct entry)
+added 2026-09-06 on `feat/guest-intake`. Not yet deployed. `docs/DEMO-RUNBOOK.md`
 covers the Neon + Vercel + Gmail setup and the demo script; `STATUS.md` is the running
 build log.
