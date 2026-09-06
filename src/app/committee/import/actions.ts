@@ -7,7 +7,7 @@ import { db } from "@/db/client";
 import { events } from "@/db/schema";
 import { requireRole } from "@/lib/authz";
 import { aiConfigured } from "@/lib/ai";
-import { parseWorkbook, ImportError, MAX_COLS, MAX_ROWS, type Sheet } from "@/lib/import/spreadsheet";
+import { parseWorkbook, defaultSheetIndex, ImportError, MAX_COLS, MAX_ROWS, type Sheet } from "@/lib/import/spreadsheet";
 import { profileColumns, type ColumnProfile } from "@/lib/import/profile";
 import { heuristicMapping } from "@/lib/import/heuristic";
 import { aiMapping } from "@/lib/import/ai";
@@ -56,8 +56,10 @@ export async function analyzeUpload(formData: FormData): Promise<{ ok: true; ana
   } catch (e) {
     return { ok: false, error: e instanceof ImportError ? e.message : "Could not read that file." };
   }
-  const requestedIndex = Number(formData.get("sheetIndex") ?? 0);
-  const sheetIndex = Number.isInteger(requestedIndex) && requestedIndex >= 0 && requestedIndex < sheets.length ? requestedIndex : 0;
+  const requestedRaw = formData.get("sheetIndex");
+  const requestedIndex = requestedRaw === null || requestedRaw === "" ? NaN : Number(requestedRaw);
+  const sheetIndex = Number.isInteger(requestedIndex) && requestedIndex >= 0 && requestedIndex < sheets.length
+    ? requestedIndex : defaultSheetIndex(sheets);
   const sheet = sheets[sheetIndex];
 
   const evs = await weddingEvents(weddingId);

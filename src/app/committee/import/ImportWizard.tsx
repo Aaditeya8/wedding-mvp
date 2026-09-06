@@ -54,14 +54,14 @@ export function ImportWizard({
     setStep(nextMode === "direct" ? "review" : "upload");
   }
 
-  function analyze(f: File, sheetIndex = 0) {
+  function analyze(f: File, sheetIndex?: number) {
     setError(null);
     setFile(f);
     startTransition(async () => {
       const fd = new FormData();
       fd.set("weddingId", weddingId);
       fd.set("file", f);
-      fd.set("sheetIndex", String(sheetIndex));
+      if (sheetIndex !== undefined) fd.set("sheetIndex", String(sheetIndex));
       const res = await analyzeUpload(fd);
       if (!res.ok) { setError(res.error); return; }
       setAnalysis(res.analysis);

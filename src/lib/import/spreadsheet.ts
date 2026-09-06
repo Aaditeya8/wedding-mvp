@@ -97,3 +97,16 @@ export function parseWorkbook(buffer: ArrayBuffer | Uint8Array, filename: string
   if (sheets.length === 0) throw new ImportError(`No data found in ${filename} — it needs a header row and at least one guest.`);
   return sheets;
 }
+
+/**
+ * Workbooks often open with a cover or notes sheet. Default to the sheet holding
+ * the most cells, which is almost always the actual guest list.
+ */
+export function defaultSheetIndex(sheets: Sheet[]): number {
+  let best = 0, bestScore = -1;
+  sheets.forEach((s, i) => {
+    const score = s.rows.length * s.headers.length;
+    if (score > bestScore) { best = i; bestScore = score; }
+  });
+  return best;
+}

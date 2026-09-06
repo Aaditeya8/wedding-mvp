@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as XLSX from "xlsx";
-import { parseWorkbook, detectHeaderRow, MAX_ROWS } from "@/lib/import/spreadsheet";
+import { parseWorkbook, detectHeaderRow, defaultSheetIndex, MAX_ROWS } from "@/lib/import/spreadsheet";
 
 function xlsxBuffer(sheets: Record<string, unknown[][]>): Uint8Array {
   const wb = XLSX.utils.book_new();
@@ -80,5 +80,15 @@ describe("detectHeaderRow", () => {
   });
   it("falls back to row 0 when nothing looks like a header", () => {
     expect(detectHeaderRow([["1", "2"], ["3", "4"]])).toBe(0);
+  });
+});
+
+describe("defaultSheetIndex", () => {
+  it("prefers the sheet with the most data, not merely the first one", () => {
+    const notes = { name: "Notes", headerRow: 0, headers: ["Notes"], rows: [["Call caterer"]] };
+    const guests = { name: "Guests", headerRow: 0, headers: ["Name", "Email", "Side"], rows: Array.from({ length: 15 }, (_, i) => [`G${i}`, `g${i}@x.com`, "bride"]) };
+    expect(defaultSheetIndex([notes, guests])).toBe(1);
+    expect(defaultSheetIndex([guests, notes])).toBe(0);
+    expect(defaultSheetIndex([])).toBe(0);
   });
 });
