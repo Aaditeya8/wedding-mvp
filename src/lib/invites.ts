@@ -29,6 +29,12 @@ export async function issueInvites(
       results.push({ familyId, ok: false, error: "family not in wedding" });
       continue;
     }
+    // Imported households may arrive without an email (WhatsApp-only lists);
+    // nothing to send to until the committee adds one.
+    if (!family.email.trim()) {
+      results.push({ familyId, ok: false, error: "no email" });
+      continue;
+    }
 
     if (type === "remind") {
       const invites = await db.select().from(eventInvites).where(eq(eventInvites.familyId, familyId));
