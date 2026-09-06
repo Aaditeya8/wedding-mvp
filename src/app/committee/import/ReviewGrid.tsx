@@ -128,7 +128,7 @@ export function ReviewGrid({
       )}
 
       <div className="portal-panel overflow-x-auto">
-        <table className="portal-table w-full min-w-[72rem] text-left text-sm">
+        <table className="portal-table w-full min-w-[84rem] text-left text-sm">
           <thead>
             <tr>
               <th className="p-3">Household</th>
@@ -150,7 +150,7 @@ export function ReviewGrid({
                     <input value={r.name} onChange={(e) => update(r.key, { name: e.target.value })} placeholder="Sharma Family" className="portal-input min-w-[11rem]" aria-label="Household name" />
                   </td>
                   <td>
-                    <select value={r.side} onChange={(e) => update(r.key, { side: e.target.value as ImportRow["side"] })} className="portal-input w-auto" aria-label="Side">
+                    <select value={r.side} onChange={(e) => update(r.key, { side: e.target.value as ImportRow["side"] })} className="portal-input min-w-[6.5rem]" aria-label="Side">
                       <option value="bride">Bride</option>
                       <option value="groom">Groom</option>
                       <option value="both">Both</option>
@@ -165,7 +165,7 @@ export function ReviewGrid({
                   <td>
                     <MembersInput key={`${r.key}-${r.members.length}`} members={r.members} onChange={(members) => update(r.key, { members })} />
                   </td>
-                  <td>
+                  <td className="min-w-[20rem]">
                     <div className="flex flex-wrap gap-1">
                       {events.map((e) => {
                         const on = r.eventIds.includes(e.id);
@@ -183,13 +183,13 @@ export function ReviewGrid({
                       })}
                     </div>
                   </td>
-                  <td>
+                  <td className="min-w-[10rem]">
                     <div className="flex flex-wrap gap-1">
                       {issues.length === 0 ? (
                         <span className="text-xs text-green-700">✓ ready</span>
                       ) : (
                         issues.map((i) => (
-                          <span key={i} className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${ISSUE_LABEL[i].cls}`}>{ISSUE_LABEL[i].text}</span>
+                          <span key={i} className={`whitespace-nowrap rounded-full border px-2 py-0.5 text-[11px] font-medium ${ISSUE_LABEL[i].cls}`}>{ISSUE_LABEL[i].text}</span>
                         ))
                       )}
                     </div>
