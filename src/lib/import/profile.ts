@@ -8,6 +8,8 @@ export type ColumnProfile = {
   header: string;
   /** Up to five distinct non-empty values, in sheet order. This is all the AI ever sees. */
   samples: string[];
+  /** Count of non-empty cells. */
+  filled: number;
   fillRate: number;
   distinct: number;
   kind: ColumnKind;
@@ -35,6 +37,7 @@ export function profileColumns(sheet: Sheet): ColumnProfile[] {
       index,
       header,
       samples: distinctValues.slice(0, 5),
+      filled: values.length,
       fillRate: sheet.rows.length ? values.length / sheet.rows.length : 0,
       distinct: distinctValues.length,
       kind: kindOf(values),
