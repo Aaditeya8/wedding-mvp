@@ -226,43 +226,66 @@ Gmail app password, and `vercel login` on your machine.
 
 ## 8. Getting guest data in: the intake portal
 
-Couples arrive with a guest list in Excel or Google Sheets, and every list is shaped
-differently. The intake portal at `/committee/import` handles that without asking anyone to
-reformat their spreadsheet.
+Couples arrive with a guest list in Excel or Google Sheets, then keep adding to it: an aunt
+sends a WhatsApp message, a cousin sends a photo of a handwritten page, the hotel sends a
+room list. The intake portal at `/committee/import` takes all of those without asking anyone
+to reformat anything, and it recognises households that are already on the list so re-sending
+a longer version of the same list never creates duplicates.
 
-**Two ways in, the committee picks:**
+**Three ways in, the committee picks:**
 
 - **Upload a spreadsheet** (`.xlsx`, `.xls`, or `.csv`). The backend reads it, works out
   which row is the header, and profiles every column (what's in it, how full it is, sample
   values). Then it proposes how the columns map onto our fields: family name, guest names,
   side, relation, email, adult/child, headcount, and which events each family is invited to.
-  If an AI key is configured, an AI model does the matching and explains what it noticed;
-  without one, a built-in matcher works from column names and cell values. Either way the
-  proposal is shown for you to correct, and the portal **asks** the questions the sheet
-  can't answer: is each row a household or a single person, how should people be grouped
-  into households, which events should everyone be invited to if the sheet doesn't say,
-  what to do with rows that have no email.
+  Misspelt headers and Hindi labels are fine. If an AI key is configured, an AI model does
+  the matching and explains what it noticed; without one, a built-in matcher works from
+  column names and cell values. Either way the proposal is shown for you to correct, and the
+  portal **asks** the questions the sheet can't answer: is each row a household or a single
+  person, how should people be grouped into households, does a family name written only on
+  the first row of a block apply to the blank rows under it, which events should everyone be
+  invited to if the sheet doesn't say, what to do with rows that have no email.
+- **Scan a photo or document.** A photo of a handwritten list, a Word or PDF file, a text
+  file, or a pasted WhatsApp message. Text is read by built-in rules (one household per
+  line, counts like "- 4" or "+3", headings like "Ladki wale" or "Bride side"), and by the
+  AI model when a key is set. Photos need the AI key, because reading handwriting is done by
+  a vision model. You see what was read and can fix every line.
 - **Type it in.** The same review grid, starting empty. Add a row per household, or use the
   single-family editor on `/committee` for one at a time.
 
-Both paths end at the same **review grid**: every household on one editable line, with a
+All three end at the same **review grid**: every household on one editable line, with a
 flag on anything that needs a human (no email, unknown side, duplicate of a family already
 in the system). Fix inline, then "Import N households" writes them into the database with
 exactly the same validation as the hand-typed form. Nothing touches the database until that
 final click, so you can abandon an upload at any step.
 
-**AI setting.** Three optional lines in `.env` switch the AI matcher on:
+**Adding to the list over time, without duplicates.** Every household about to be imported
+is compared with the ones already saved for that wedding: same email, or the same household
+name once words like "family", "parivar", "the" and "ji" are ignored, or mostly the same
+people. Matches are flagged "already on the list" and you choose once for the whole batch:
+
+| Choice | What happens |
+|---|---|
+| **Add what's new to them** (default) | New people are added, extra events are added, a missing email or relation is filled in. Nothing is removed. Re-importing the same list changes nothing. |
+| Skip them | The saved version is left exactly as it is. |
+| Replace them | This version wins: members and events are overwritten. |
+
+Two households that both have emails, and different ones, are never treated as the same
+household even if the names match. "Sharma Family" is not rare.
+
+**AI setting.** Four optional lines in `.env` switch the AI on:
 
 ```
-AI_API_KEY=...                                  # any OpenAI-compatible provider key
-AI_BASE_URL=https://api.groq.com/openai/v1      # default: Groq (free tier)
-AI_MODEL=openai/gpt-oss-120b                    # default
+AI_API_KEY=...                                        # any OpenAI-compatible provider key
+AI_BASE_URL=https://api.groq.com/openai/v1            # default: Groq (free tier)
+AI_MODEL=openai/gpt-oss-120b                          # text: column matching, list reading
+AI_VISION_MODEL=meta-llama/llama-4-scout-17b-16e-instruct   # photos of lists
 ```
 
-Only column names and a handful of sample cells are sent to the model, never the full
-sheet. Leave `AI_API_KEY` empty and the portal still works, just with the name-based matcher.
-
----
+For spreadsheets only column names and a handful of sample cells are sent to the model,
+never the full sheet. For pasted text and photos the whole text or image is sent, because
+that is the thing being read. Leave `AI_API_KEY` empty and everything except photos still
+works.
 
 ## 9. When something breaks
 

@@ -17,11 +17,13 @@ real enough to put in front of a paying couple.
   hashes and expire a week after the wedding.
 - **Committee dashboard** — `/committee`. Add and edit families and their guests, send
   invites, resend, chase non-responders, per-event totals.
-- **Guest intake** — `/committee/import`. Upload the guest list as it already exists
-  (xlsx/xls/csv): the portal detects the header row, profiles every column, proposes how
-  they map onto households/guests/side/email/events (AI-assisted when a key is set, name-
-  based otherwise), asks the questions the sheet can't answer, and shows an editable review
-  grid before anything is written. The same grid doubles as direct entry.
+- **Guest intake** — `/committee/import`. Three ways in, one review grid, one write:
+  upload the guest list as it already exists (xlsx/xls/csv — header row detected, columns
+  profiled and mapped, AI-assisted when a key is set, name-based otherwise, with the
+  questions the sheet can't answer asked out loud); scan a photo of a handwritten list, a
+  Word/PDF/text file, or a pasted WhatsApp message; or type households straight in.
+  Households already on the list are recognised by email, name, or the same people and
+  merged by default, so the list can keep growing without duplicates.
 - **Couple dashboard** — `/couple`. RSVP stats, who hasn't replied, and a live theme
   switcher for their own site.
 - **Admin** — `/admin`. All weddings, staff, delivery log, plus `/admin/mailroom`, an
@@ -78,7 +80,7 @@ provisioned user row, so the seed is the only provisioning path.
 | `npm run build` | Production build (uses a throwaway in-memory DB) |
 | `npm run seed` | Migrate + reseed both demo weddings, print RSVP links |
 | `npm run db:reset` | Delete `var/pglite` and reseed from scratch |
-| `npm test` | Vitest unit suite (71 tests) |
+| `npm test` | Vitest unit suite (95 tests) |
 | `npm run e2e` | Playwright end-to-end guest RSVP flow |
 
 ### Environment
@@ -94,6 +96,7 @@ provisioned user row, so the seed is the only provisioning path.
 | `SEED_STAFF_EMAILS` | Optional. Five comma-separated staff logins for the seed. |
 | `AI_API_KEY` | Optional. Enables AI column matching in the import. Any OpenAI-compatible provider. |
 | `AI_BASE_URL` / `AI_MODEL` | Optional. Default `https://api.groq.com/openai/v1` / `openai/gpt-oss-120b`. |
+| `AI_VISION_MODEL` | Optional. Reads photos of guest lists. Default `meta-llama/llama-4-scout-17b-16e-instruct`. |
 
 ## Layout
 
@@ -109,7 +112,7 @@ src/
     signin/          magic-link sign-in
   db/                Drizzle schema + the PGlite/Neon client switch
   lib/               rsvp, invites, tokens, mailer, authz, ratelimit, ai (chat seam)
-    import/          spreadsheet parse → profile → heuristic/AI mapping → normalise → commit
+    import/          spreadsheet parse → profile → heuristic/AI mapping → normalise → match → commit; scan (docx/pdf/txt/photo)
   themes/            theme catalog, CSS custom-property tokens, SVG ornaments
   emails/            React Email invite template
   auth.ts            Auth.js config (Drizzle adapter, Nodemailer provider)
@@ -138,8 +141,8 @@ actually be read.
 
 ## Status
 
-Feature-complete for the pilot demo and verified in a browser: 71 unit tests, a Playwright
-RSVP happy path, and a clean production build. Guest intake (spreadsheet + direct entry)
-added 2026-09-06 on `feat/guest-intake`. Not yet deployed. `docs/DEMO-RUNBOOK.md`
+Feature-complete for the pilot demo and verified in a browser: 95 unit tests, a Playwright
+RSVP happy path, and a clean production build. Guest intake (spreadsheet, scan, direct
+entry, incremental merge) added 2026-09-06 on `feat/guest-intake`. Not yet deployed. `docs/DEMO-RUNBOOK.md`
 covers the Neon + Vercel + Gmail setup and the demo script; `STATUS.md` is the running
 build log.

@@ -125,3 +125,56 @@ Vitest, under `tests/unit/import/`:
 - `invites`: empty email skipped.
 
 Browser verification with a sample `.xlsx` through the full wizard, plus the direct-entry path.
+
+---
+
+## Addendum (same day): real list, incremental adds, scanning documents
+
+**Trigger.** Aadi supplied a real customer list (a hotel room allocation sheet: family name
+on the first row of a block, one person per row below, `Nos` = headcount, a misspelt
+"Detai of Oersons" column, no emails/sides/events) and asked for "scanning written/docs
+with incremental data to keep adding without duplication".
+
+### A. Spreadsheet path changes
+- **Fill-down grouping.** New question `fillDown` (asked when the family column is < 70 %
+  filled; default *yes* below 50 %): a blank family cell continues the family above.
+- **Fuzzy headers.** One typo per word of 4+ letters, two per word of 7+ ("oersons" ≈
+  "persons"). Score 0.7, shown as "probably".
+- **Name-column fallback.** When no header names the guests, the fullest, most varied unused
+  text column is proposed (confidence 0.5).
+- **Headcount padding.** In both granularities a group's headcount (`Nos`, `No. of people`)
+  pads members with `Guest N` placeholders. Rows with every mapped cell blank are dropped
+  and counted (`stats.emptyRows`).
+- `headcount` synonyms gain `nos`, `number`, `guests`; `guestName` gains `persons`,
+  `details of persons`, `who`.
+
+### B. Duplicate detection and merge (`src/lib/import/match.ts`, `commit.ts`)
+- A row matches an existing household by **email**, else by **normalised name** (drops
+  the/family/parivar/house/ji/&, possessives, plural s), else by **member overlap** (≥ 50 %
+  of the smaller side, placeholders ignored). Two rows that both carry emails, and
+  different ones, never match by name or people.
+- `onExisting`: `skip` | `update` | **`merge`** (default). Merge adds unseen people (no
+  placeholders), unions event invites, fills blank email/relation, never removes. Newly
+  inserted rows join the match pool so a household repeated within one batch is handled
+  the same way. Re-importing an identical list → created 0, updated N.
+- Typed-in rows are checked (`checkRows`) on the first Import click; matches surface the
+  choice panel before anything is written.
+
+### C. Scan path (`src/lib/import/scan.ts`, `extractDocument`)
+- Inputs: JPG/PNG/WEBP/GIF (vision), PDF (text layer via `unpdf`; scans are rejected with
+  advice to photograph), DOCX (`fflate` unzip → `word/document.xml` paragraphs), TXT, or
+  pasted text. ≤ 6 MB; server-action body limit raised to 8 MB.
+- `parseGuestText` (rule-based, always runs): enumerators, side headings (Ladki wale /
+  Groom side), counts (`- 4`, `x5`, `+3`, `& 2 kids`, `(4)`), `Label: a, b, c`, comma
+  lists, bare names, emails, parenthetical events/relation/side, junk lines (totals,
+  headings). `(child)` / `(6)` after a listed name stays an age marker.
+- `aiExtractHouseholds`: same JSON shape from the model; text → `AI_MODEL`, images →
+  `AI_VISION_MODEL` (default `meta-llama/llama-4-scout-17b-16e-instruct` on Groq, sent as
+  OpenAI `image_url` content parts). Falls back to the rules for text; photos without a key
+  are refused with a clear message.
+- `householdsToRows` → the same review grid; the engine badge and the model's notes are
+  shown above it, with the extracted text on request.
+
+### D. Privacy
+The real list stays outside the repo (`var/` is gitignored; the browser test used a copy
+there). No guest names appear in docs, commits, or tests — fixtures are invented.
