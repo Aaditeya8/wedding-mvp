@@ -129,7 +129,9 @@ actually be read.
 
 - **PGlite allows one process at a time.** Don't run `npm run seed` while `npm run dev`
   is up — stop the server first. `npm run db:reset` fixes a corrupted local DB.
-- `npm run e2e` manages its own server and wipes the local database.
+- `npm run e2e` manages its own server and wipes the local database. If something else
+  already owns port 3000, `PORT=3001 npm run e2e` runs the suite there (dev server too:
+  `npm run dev -- -p 3001`).
 - Reminders mint a fresh invite token, which invalidates the family's previous link.
   Tokens are stored hash-only, so the original can't be recovered — each mail carries a
   working link, and only the newest one works.
