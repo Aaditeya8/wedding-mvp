@@ -1,3 +1,40 @@
+# Status — 6 September 2026 (evening)
+
+## Real list + incremental adds + scanning (`feat/guest-intake`, verified in browser)
+
+- **Aadi's real list** (a hotel room-allocation sheet: family name on the first row of a
+  block, one person per row under it, `Nos` = headcount, a misspelt "Detai of Oersons"
+  column, no emails/sides/events, stored outside the repo) now imports correctly: fuzzy
+  header matching, a **fill-down question** ("blank family cell continues the family
+  above?", default yes when the column is sparse), name-column fallback, headcount
+  padding with `Guest N`, blank spacer rows dropped. 126 rows → 24 households
+  (22 added + 2 merged because the sheet repeats a family name).
+- **Incremental adds without duplicates** (`src/lib/import/match.ts`): a household matches
+  an existing one by email, else normalised name (the/family/parivar/ji/possessives/plural
+  stripped), else ≥ 50 % of the same people (placeholders ignored). Two rows with
+  *different* emails never match. New `onExisting: "merge"` (default): add unseen people,
+  union events, fill blank email/relation, remove nothing. Re-importing the identical list
+  → 0 added / 24 updated. Typed-in rows are checked (`checkRows`) on the first Import
+  click and the choice panel appears before anything is written.
+- **Scan path** (`src/lib/import/scan.ts`, `extractDocument`): photo (JPG/PNG/WEBP/GIF →
+  vision model, `AI_VISION_MODEL`, default llama-4-scout on Groq), PDF text layer
+  (`unpdf`), DOCX (`fflate`), TXT, or pasted text. Rule-based `parseGuestText` always
+  runs (enumerators, side headings incl. Ladki/Ladka wale, counts `- 4` / `x5` / `+3` /
+  `& 2 kids` / `(4)`, `Label: a, b`, emails, parenthetical events/relation, junk lines);
+  the model refines text when a key is set. Same review grid; engine badge + notes +
+  "show the text we read". Pasted WhatsApp-style list → 6 households, 5 recognised as
+  already on the list (4 by name, 1 by people), 1 added / 5 merged.
+- Server-action body limit 8 MB (phone photos). Typed-in rows start invited to every event.
+- Docs: `docs/HOW-IT-WORKS.md` §8 rewritten (three ways in, merge table, AI lines), spec
+  addendum, README, `.env.example` (`AI_VISION_MODEL`).
+- Validation: **95 unit** ✅ (tests/unit/import: spreadsheet, profile, heuristic, ai,
+  normalize, match, scan, commit), tsc ✅, build ✅, e2e ✅ (`PORT=3001`), browser pass:
+  real list import → identical re-import → pasted scan → typed duplicate. Fixtures use
+  invented names only; the real file lives in `var/` (gitignored).
+- ⚠️ AI/vision paths exercised only with a fake provider; set `AI_API_KEY` to try a photo.
+- ⚠️ PGlite corrupted twice today after e2e/dev-server teardown — `npm run db:reset` each
+  time. The local DB currently holds seed + the real list's households; reset before demoing.
+
 # Status — 6 September 2026
 
 ## Guest intake portal (`feat/guest-intake`, verified in browser, all suites green)
