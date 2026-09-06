@@ -55,7 +55,7 @@ Mama ji + 3 (reception only)
 Groom side:
 - Zoya Khan (zoya@example.com)
 - The Guptas x5
-Wadiker masa: Sonu, Tush, Pinky
+Deshmukh masa: Bunty, Chintu, Pinky
 Total: 20`;
     const hs = parseGuestText(text);
     expect(hs).toHaveLength(6);
@@ -64,7 +64,7 @@ Total: 20`;
     expect(hs[2]).toMatchObject({ name: "Mama ji", headcount: 4, side: "bride", events: ["reception"] });
     expect(hs[3]).toMatchObject({ members: ["Zoya Khan"], email: "zoya@example.com", side: "groom" });
     expect(hs[4]).toMatchObject({ name: "The Guptas", headcount: 5, side: "groom" });
-    expect(hs[5]).toMatchObject({ name: "Wadiker masa", members: ["Sonu", "Tush", "Pinky"], side: "groom" });
+    expect(hs[5]).toMatchObject({ name: "Deshmukh masa", members: ["Bunty", "Chintu", "Pinky"], side: "groom" });
   });
   it("treats a bare name line as one household of one person", () => {
     const [h] = parseGuestText("Priya Nair");

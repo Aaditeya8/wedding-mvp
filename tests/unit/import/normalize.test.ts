@@ -166,12 +166,12 @@ describe("buildRows — block layout (family name on the first row of each group
   const BLOCK = sheet(
     ["Family Name", "Persons", "Nos"],
     [
-      ["Wadiker", "Wadiker masa", "5"],
-      ["", "Sonu", ""],
-      ["", "Tush", ""],
-      ["Trupti", "Trupti", "3"],
-      ["", "Raj", ""],
-      ["Bhosale", "", "4"],
+      ["Deshmukh", "Deshmukh masa", "5"],
+      ["", "Bunty", ""],
+      ["", "Chintu", ""],
+      ["Tanvi", "Tanvi", "3"],
+      ["", "Rohan", ""],
+      ["Patil", "", "4"],
       ["", "", ""],
     ],
   );
@@ -179,9 +179,9 @@ describe("buildRows — block layout (family name on the first row of each group
 
   it("carries the family name down over blank cells when asked, and pads members up to the block's headcount", () => {
     const { rows, stats } = buildRows(BLOCK, M, { groupBy: "column:0", fillDown: "yes" }, EVENTS);
-    expect(rows.map((r) => r.name)).toEqual(["Wadiker Family", "Trupti Family", "Bhosale Family"]);
-    expect(rows[0].members.map((m) => m.fullName)).toEqual(["Wadiker masa", "Sonu", "Tush", "Guest 4", "Guest 5"]);
-    expect(rows[1].members.map((m) => m.fullName)).toEqual(["Trupti", "Raj", "Guest 3"]);
+    expect(rows.map((r) => r.name)).toEqual(["Deshmukh Family", "Tanvi Family", "Patil Family"]);
+    expect(rows[0].members.map((m) => m.fullName)).toEqual(["Deshmukh masa", "Bunty", "Chintu", "Guest 4", "Guest 5"]);
+    expect(rows[1].members.map((m) => m.fullName)).toEqual(["Tanvi", "Rohan", "Guest 3"]);
     expect(rows[2].members.map((m) => m.fullName)).toEqual(["Guest 1", "Guest 2", "Guest 3", "Guest 4"]);
     expect(rows[2].issues).not.toContain("no_members");
     expect(stats.emptyRows).toBe(1);
@@ -190,6 +190,6 @@ describe("buildRows — block layout (family name on the first row of each group
 
   it("treats a blank family cell as its own household when fillDown is no", () => {
     const { rows } = buildRows(BLOCK, M, { groupBy: "column:0", fillDown: "no" }, EVENTS);
-    expect(rows.map((r) => r.name)).toEqual(["Wadiker Family", "Sonu", "Tush", "Trupti Family", "Raj", "Bhosale Family"]);
+    expect(rows.map((r) => r.name)).toEqual(["Deshmukh Family", "Bunty", "Chintu", "Tanvi Family", "Rohan", "Patil Family"]);
   });
 });

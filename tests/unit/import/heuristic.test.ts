@@ -80,11 +80,11 @@ describe("heuristicMapping", () => {
 const ROOM_LIST = sheet(
   ["Sr No", "Family Name", "Detai of Oersons", "Nos", "2 accupency Room", "Qty", "Remark"],
   [
-    ["1", "Wadiker", "Wadiker masa", "5", "1", "3", ""],
-    ["", "", "Sonu", "", "", "", "one Bed"],
-    ["", "", "Tush", "", "", "", ""],
-    ["2", "Trupti", "Trupti", "3", "0", "0", ""],
-    ["", "", "Raj", "", "", "", ""],
+    ["1", "Deshmukh", "Deshmukh masa", "5", "1", "3", ""],
+    ["", "", "Bunty", "", "", "", "one Bed"],
+    ["", "", "Chintu", "", "", "", ""],
+    ["2", "Tanvi", "Tanvi", "3", "0", "0", ""],
+    ["", "", "Rohan", "", "", "", ""],
   ],
 );
 
@@ -98,7 +98,7 @@ describe("heuristicMapping — hotel room list with typos and a sparse family co
   });
 
   it("falls back to the fullest unused text column for guest names when no header matches", () => {
-    const s = sheet(["Family", "Whatever", "Nos"], [["Wadiker", "Masa", "3"], ["", "Sonu", ""], ["", "Tush", ""]]);
+    const s = sheet(["Family", "Whatever", "Nos"], [["Deshmukh", "Masa", "3"], ["", "Bunty", ""], ["", "Chintu", ""]]);
     const m = heuristicMapping(profileColumns(s), EVENTS);
     expect(m.fields.guestName).toBe(1);
     expect(m.confidence.guestName).toBeLessThan(0.6);
