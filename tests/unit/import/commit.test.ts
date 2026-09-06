@@ -91,4 +91,30 @@ describe("commitImport", () => {
     expect(await db.select().from(families).where(eq(families.email, "y@x.com"))).toHaveLength(0);
     expect(await db.select().from(families).where(eq(families.email, "z@x.com"))).toHaveLength(1);
   });
+
+  it("merges into a household matched by name: keeps its name, adds new people, unions events, fills blanks", async () => {
+    const res = await commitImport(weddingId, [
+      row({ key: "m", name: "Fine Parivar", email: "", relation: "Neighbours",
+        members: [{ fullName: "Fine Family", ageGroup: "adult" }, { fullName: "Baby Fine", ageGroup: "child" }],
+        eventIds: [pheras] }),
+    ], { onExisting: "merge" });
+    expect(res).toMatchObject({ created: 0, updated: 1, skipped: 0, errors: [] });
+    const fams = await db.select().from(families).where(eq(families.email, "z@x.com"));
+    expect(fams).toHaveLength(1);
+    expect(fams[0]).toMatchObject({ name: "Fine Family", relation: "Neighbours" });
+    const members = await db.select().from(guests).where(eq(guests.familyId, fams[0].id));
+    expect(members.map((m) => [m.fullName, m.ageGroup])).toEqual([["Fine Family", "adult"], ["Baby Fine", "child"]]);
+    const invites = await db.select().from(eventInvites).where(eq(eventInvites.familyId, fams[0].id));
+    expect(invites.map((i) => i.eventId).sort()).toEqual([sangeet, pheras].sort());
+  });
+
+  it("re-importing the same list with merge changes nothing and reports it as updated, not created", async () => {
+    const before = await db.select().from(families).where(eq(families.weddingId, weddingId));
+    const res = await commitImport(weddingId, [
+      row({ key: "r", name: "Fine Family", email: "", members: [{ fullName: "Fine Family", ageGroup: "adult" }], eventIds: [sangeet] }),
+    ], { onExisting: "merge" });
+    expect(res).toMatchObject({ created: 0, updated: 1 });
+    const after = await db.select().from(families).where(eq(families.weddingId, weddingId));
+    expect(after).toHaveLength(before.length);
+  });
 });

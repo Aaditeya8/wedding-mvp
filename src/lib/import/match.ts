@@ -46,9 +46,13 @@ export function matchExisting(row: ImportRow, existing: ExistingFamily[]): Match
     if (hit) return { id: hit.id, reason: "email" };
   }
 
+  // Two households that both have emails, and different ones, are two households —
+  // "Sharma Family" is not rare.
+  const differentEmail = (f: ExistingFamily) => !!email && !!f.email.trim() && f.email.trim().toLowerCase() !== email;
+
   const norm = normalizeFamilyName(row.name);
   if (norm) {
-    const hit = existing.find((f) => normalizeFamilyName(f.name) === norm);
+    const hit = existing.find((f) => !differentEmail(f) && normalizeFamilyName(f.name) === norm);
     if (hit) return { id: hit.id, reason: "name" };
   }
 
@@ -56,6 +60,7 @@ export function matchExisting(row: ImportRow, existing: ExistingFamily[]): Match
   if (people.size === 0) return null;
   let best: { id: string; ratio: number } | null = null;
   for (const f of existing) {
+    if (differentEmail(f)) continue;
     const theirs = new Set(f.members.map(normalizePersonName).filter((n): n is string => !!n));
     if (theirs.size === 0) continue;
     let shared = 0;

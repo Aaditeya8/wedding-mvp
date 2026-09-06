@@ -150,7 +150,7 @@ export function parseGuestText(text: string): ScanHousehold[] {
     if (!core) continue;
 
     if (core.includes(":")) {
-      const [label, rest] = core.split(/:(.*)/s);
+      const [label, rest] = core.split(/:([\s\S]*)/);
       h.name = label.trim();
       h.members = rest.split(SEPARATORS).map((s) => s.trim()).filter(Boolean);
     } else if (SEPARATORS.test(core)) {

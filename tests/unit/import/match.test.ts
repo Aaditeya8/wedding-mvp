@@ -9,13 +9,12 @@ const EXISTING: ExistingFamily[] = [
   { id: "f4", name: "Bhosale Family", email: "", members: ["Guest 1", "Guest 2"] },
 ];
 
-function row(over: Partial<ImportRow> & { name: string }): ImportRow {
+function row(over: Partial<Omit<ImportRow, "members">> & { name: string; members?: string[] }): ImportRow {
+  const { members, ...rest } = over;
   return {
     key: "k", side: "both", relation: "", email: "", eventIds: [], issues: [], sourceRows: [],
-    members: (over.members as ImportRow["members"]) ?? [{ fullName: over.name, ageGroup: "adult" }],
-    ...over,
-    members: ((over.members as unknown as string[] | undefined) ?? [over.name]).map((m) =>
-      typeof m === "string" ? { fullName: m, ageGroup: "adult" as const } : m),
+    ...rest,
+    members: (members ?? [over.name]).map((n) => ({ fullName: n, ageGroup: "adult" as const })),
   };
 }
 
@@ -41,14 +40,18 @@ describe("matchExisting", () => {
   });
   it("matches by normalised household name when there is no email", () => {
     expect(matchExisting(row({ name: "Wadiker Family" }), EXISTING)).toEqual({ id: "f2", reason: "name" });
-    expect(matchExisting(row({ name: "Khan Family", email: "other@x.com" }), EXISTING)).toEqual({ id: "f3", reason: "name" });
+    expect(matchExisting(row({ name: "Khan Family" }), EXISTING)).toEqual({ id: "f3", reason: "name" });
+  });
+  it("never matches by name or people when both sides have different emails", () => {
+    expect(matchExisting(row({ name: "Sharma Family", email: "other-sharma@x.com" }), EXISTING)).toBeNull();
+    expect(matchExisting(row({ name: "Whoever", email: "new@x.com", members: ["Sonu", "Tush"] }), [{ ...EXISTING[1], email: "wadiker@x.com" }])).toBeNull();
   });
   it("matches by member overlap when names differ", () => {
-    expect(matchExisting(row({ name: "Masa's group", members: ["Sonu", "Tush", "New Person"] as never }), EXISTING)).toEqual({ id: "f2", reason: "members" });
+    expect(matchExisting(row({ name: "Masa's group", members: ["Sonu", "Tush", "New Person"] }), EXISTING)).toEqual({ id: "f2", reason: "members" });
   });
   it("does not match on weak overlap, placeholders, or unrelated rows", () => {
-    expect(matchExisting(row({ name: "Gupta Family", members: ["Manoj Gupta"] as never }), EXISTING)).toBeNull();
-    expect(matchExisting(row({ name: "Big Group", members: ["Sonu", "A", "B", "C", "D"] as never }), EXISTING)).toBeNull();
-    expect(matchExisting(row({ name: "Another", members: ["Guest 1", "Guest 2"] as never }), EXISTING)).toBeNull();
+    expect(matchExisting(row({ name: "Gupta Family", members: ["Manoj Gupta"] }), EXISTING)).toBeNull();
+    expect(matchExisting(row({ name: "Big Group", members: ["Sonu", "A", "B", "C", "D"] }), EXISTING)).toBeNull();
+    expect(matchExisting(row({ name: "Another", members: ["Guest 1", "Guest 2"] }), EXISTING)).toBeNull();
   });
 });

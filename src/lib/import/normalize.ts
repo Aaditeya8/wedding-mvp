@@ -2,6 +2,7 @@ import type { Sheet } from "./spreadsheet";
 import { EMAIL_RE } from "./profile";
 import { mainEvents, type Answers, type EventRef, type Mapping } from "./mapping";
 import { matchEventName, parseAgeGroup, parseBoolean, parseSide } from "./targets";
+import type { Match } from "./match";
 
 export type IssueCode =
   | "missing_name" | "missing_email" | "invalid_email" | "unknown_side"
@@ -20,6 +21,8 @@ export type ImportRow = {
   issues: IssueCode[];
   /** 0-based indexes into Sheet.rows this household came from */
   sourceRows: number[];
+  /** set by the server when this looks like a household already on the list */
+  match?: Match;
 };
 
 export type BuildStats = { sourceRows: number; households: number; withIssues: number; emptyRows: number };

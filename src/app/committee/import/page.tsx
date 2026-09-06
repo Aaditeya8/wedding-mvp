@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { weddings, events } from "@/db/schema";
 import { requireRole } from "@/lib/authz";
+import { aiConfigured } from "@/lib/ai";
 import { ImportWizard } from "./ImportWizard";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +38,7 @@ export default async function ImportPage({
             <p className="portal-eyebrow">Guest intake</p>
             <h1 className="portal-heading mt-2">{wedding.brideName} &amp; {wedding.groomName}</h1>
             <p className="portal-subheading mt-3">
-              Bring the guest list in the shape it already has. Upload the spreadsheet you were sent, or type households straight in — either way you review every line before anything is saved.
+              Bring the guest list in whatever shape it arrives: a spreadsheet, a photo of a handwritten list, a document, a pasted message, or typed straight in. You review every line before anything is saved, and households already on the list are merged rather than duplicated.
             </p>
           </div>
           <Link href={backHref} className="portal-button-secondary">← Guest operations</Link>
@@ -47,7 +48,8 @@ export default async function ImportPage({
           weddingId={weddingId}
           events={evs}
           backHref={backHref}
-          initialMode={params.mode === "direct" ? "direct" : null}
+          initialMode={params.mode === "direct" ? "direct" : params.mode === "scan" ? "scan" : null}
+          aiConfigured={aiConfigured()}
         />
       </div>
     </main>
