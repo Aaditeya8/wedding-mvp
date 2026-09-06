@@ -52,7 +52,7 @@ export async function commitImport(weddingId: string, rows: ImportRow[], opts: C
       familyId = existingId;
       result.updated++;
     } else {
-      const [f] = await db.insert(families).values({ weddingId, ...values }).returning({ id: families.id });
+      const [f] = await db.insert(families).values({ weddingId, ...values }).returning();
       familyId = f.id;
       if (email) existing.set(email, familyId);
       result.created++;

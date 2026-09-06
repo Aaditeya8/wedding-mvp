@@ -71,6 +71,9 @@ export function FamilyTable({
         >
           Add family
         </button>
+        <a href={`/committee/import?wedding=${weddingId}`} className="portal-button-secondary">
+          Import guest list
+        </a>
         <div className="mx-1 hidden h-6 w-px bg-neutral-200 sm:block" />
         <button
           disabled={!ids.length || pending}
@@ -141,7 +144,9 @@ export function FamilyTable({
                     {r.relation}
                   </p>
                 </td>
-                <td className="text-neutral-600">{r.email}</td>
+                <td className="text-neutral-600">
+                  {r.email || <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700">no email</span>}
+                </td>
                 <td className="tabular-nums">{r.members.length}</td>
                 <td>
                   <div className="flex flex-wrap gap-1.5">
@@ -212,7 +217,8 @@ export function FamilyTable({
             {rows.length === 0 && (
               <tr>
                 <td colSpan={7} className="p-10 text-center text-sm text-neutral-400">
-                  No families yet — add the first one.
+                  No families yet — add the first one, or{" "}
+                  <a href={`/committee/import?wedding=${weddingId}`} className="portal-link">import a spreadsheet</a>.
                 </td>
               </tr>
             )}

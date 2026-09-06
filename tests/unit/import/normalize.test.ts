@@ -14,7 +14,7 @@ const EVENTS: EventRef[] = [
 function sheet(headers: string[], rows: string[][]): Sheet {
   return { name: "S", headerRow: 0, headers, rows };
 }
-function mapping(partial: Partial<Mapping> & { fields?: Partial<Mapping["fields"]> }): Mapping {
+function mapping(partial: Omit<Partial<Mapping>, "fields"> & { fields?: Partial<Mapping["fields"]> }): Mapping {
   return {
     granularity: partial.granularity ?? "family",
     fields: { ...EMPTY_FIELDS, ...(partial.fields ?? {}) },
