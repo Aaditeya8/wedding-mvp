@@ -22,7 +22,7 @@ export type ImportRow = {
   sourceRows: number[];
 };
 
-export type BuildStats = { sourceRows: number; households: number; withIssues: number };
+export type BuildStats = { sourceRows: number; households: number; withIssues: number; emptyRows: number };
 
 const NAME_SEP = /\s*(?:,|;|\/|\+|&|\band\b|\n)\s*/i;
 const CHILD_MARK = /\s*[\(\[\-–]\s*(child|kid|baby|infant|toddler|minor|\d{1,2}\s*(?:y|yr|yrs|years?|yo)?)\s*[\)\]]?\s*$/i;
@@ -47,7 +47,7 @@ function surname(fullName: string): string | null {
   return parts.length >= 2 ? parts[parts.length - 1] : null;
 }
 
-function familyFromMember(fullName: string): string {
+export function familyFromMember(fullName: string): string {
   const s = surname(fullName);
   return s ? `${s} Family` : fullName;
 }
@@ -65,9 +65,21 @@ type Extracted = {
   sideRaw: string;
   relation: string;
   email: string;
+  headcount: number | null;
   members: Member[];
   eventIds: string[];
+  /** every mapped cell blank — a spacer or totals row, not a guest */
+  empty: boolean;
 };
+
+export const MAX_PLACEHOLDERS = 50;
+
+export function padWithPlaceholders(members: Member[], headcount: number | null | undefined): Member[] {
+  if (!headcount || headcount <= members.length) return members;
+  const out = [...members];
+  for (let i = members.length + 1; i <= Math.min(headcount, MAX_PLACEHOLDERS); i++) out.push({ fullName: `Guest ${i}`, ageGroup: "adult" });
+  return out;
+}
 
 function eventIdsForRow(cells: string[], mapping: Mapping, answers: Answers, events: EventRef[]): string[] {
   const perEvent = Object.entries(mapping.eventColumns).filter(([, i]) => i !== null) as [string, number][];
@@ -108,22 +120,24 @@ function extract(sheet: Sheet, mapping: Mapping, answers: Answers, events: Event
         const ag = parseAgeGroup(ageRaw);
         if (ag && members.length === 1) members[0].ageGroup = ag;
       }
-      if (!members.length && Number.isFinite(headcount) && headcount > 0) {
-        members = Array.from({ length: Math.min(headcount, 50) }, (_, i) => ({ fullName: `Guest ${i + 1}`, ageGroup: "adult" as const }));
-      }
     }
 
     const sideRaw = cell(cells, f.side);
+    const familyName = cell(cells, f.familyName);
+    const email = cell(cells, f.email).toLowerCase();
+    const mappedCells = (Object.values(f) as (number | null)[]).filter((i): i is number => i !== null).map((i) => (cells[i] ?? "").trim());
     return {
       row,
-      familyName: cell(cells, f.familyName),
+      familyName,
       guestName,
       side: parseSide(sideRaw),
       sideRaw,
       relation: cell(cells, f.relation),
-      email: cell(cells, f.email).toLowerCase(),
+      email,
+      headcount: Number.isFinite(headcount) && headcount > 0 ? headcount : null,
       members,
       eventIds: eventIdsForRow(cells, mapping, answers, events),
+      empty: mappedCells.every((c) => c === ""),
     };
   });
 }
@@ -147,7 +161,9 @@ function groupKey(e: Extracted, mode: string, sheet: Sheet): { key: string; valu
  * by the caller once it has looked the emails up.
  */
 export function buildRows(sheet: Sheet, mapping: Mapping, answers: Answers, events: EventRef[]): { rows: ImportRow[]; stats: BuildStats } {
-  const extracted = extract(sheet, mapping, answers, events);
+  const all = extract(sheet, mapping, answers, events);
+  const extracted = all.filter((e) => !e.empty);
+  const emptyRows = all.length - extracted.length;
   const sideMapped = mapping.fields.side !== null;
   const sortedEvents = [...events].sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -157,10 +173,22 @@ export function buildRows(sheet: Sheet, mapping: Mapping, answers: Answers, even
     ? (typeof answers.groupBy === "string" ? answers.groupBy : defaultGroupBy)
     : "row";
 
+  // Merged-cell exports carry the family name on the block's first row only
+  const fillCol = mode.startsWith("column:") ? Number(mode.slice(7)) : -1;
+  const fillRate = fillCol >= 0 && sheet.rows.length
+    ? sheet.rows.filter((r) => (r[fillCol] ?? "").trim()).length / sheet.rows.length : 1;
+  const fillDown = fillCol >= 0 && (answers.fillDown === "yes" || (answers.fillDown === undefined && fillRate < 0.5));
+  let carried: string | null = null;
+
   // group source rows into households, preserving first-seen order
   const groups = new Map<string, { value: string | null; items: Extracted[] }>();
   for (const e of extracted) {
-    const g = mode === "row" || mode === "none" ? null : groupKey(e, mode, sheet);
+    let g = mode === "row" || mode === "none" ? null : groupKey(e, mode, sheet);
+    if (fillDown) {
+      const own = (sheet.rows[e.row][fillCol] ?? "").trim();
+      if (own) carried = own;
+      else if (carried) g = { key: `c:${carried.toLowerCase()}`, value: carried };
+    }
     const key = g ? g.key : `row:${e.row}`;
     const bucket = groups.get(key) ?? { value: g?.value ?? null, items: [] };
     bucket.items.push(e);
@@ -205,6 +233,10 @@ export function buildRows(sheet: Sheet, mapping: Mapping, answers: Answers, even
     if (validEmail) seenEmails.add(validEmail);
 
     if (!name) issues.push("missing_name");
+
+    const headcount = Math.max(0, ...items.map((i) => i.headcount ?? 0));
+    const padded = padWithPlaceholders(members, headcount);
+    if (padded.length > members.length) { members.length = 0; members.push(...padded); }
     if (!members.length) {
       issues.push("no_members");
       if (name) members.push({ fullName: name, ageGroup: "adult" });
@@ -230,6 +262,6 @@ export function buildRows(sheet: Sheet, mapping: Mapping, answers: Answers, even
   const kept = answers.missingEmail === "skip" ? rows.filter((r) => !r.issues.includes("missing_email")) : rows;
   return {
     rows: kept,
-    stats: { sourceRows: sheet.rows.length, households: kept.length, withIssues: kept.filter((r) => r.issues.length).length },
+    stats: { sourceRows: sheet.rows.length, households: kept.length, withIssues: kept.filter((r) => r.issues.length).length, emptyRows },
   };
 }

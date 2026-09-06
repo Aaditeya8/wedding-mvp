@@ -57,7 +57,7 @@ describe("buildRows — one person per row", () => {
 
   it("groups by the family column, merging members, side, email and the union of events", () => {
     const { rows, stats } = buildRows(PLANNER, M, { groupBy: "column:1" }, EVENTS);
-    expect(stats).toEqual({ sourceRows: 5, households: 3, withIssues: 1 });
+    expect(stats).toEqual({ sourceRows: 5, households: 3, withIssues: 1, emptyRows: 0 });
     const sharma = rows[0];
     expect(sharma.name).toBe("Sharma Family");
     expect(sharma.side).toBe("bride");
@@ -159,5 +159,37 @@ describe("buildRows — one household per row", () => {
     const { rows } = buildRows(S, M2, {}, EVENTS);
     expect(rows[0].name).toBe("Nair Family");
     expect(rows[1].name).toBe("Solo");
+  });
+});
+
+describe("buildRows — block layout (family name on the first row of each group only)", () => {
+  const BLOCK = sheet(
+    ["Family Name", "Persons", "Nos"],
+    [
+      ["Wadiker", "Wadiker masa", "5"],
+      ["", "Sonu", ""],
+      ["", "Tush", ""],
+      ["Trupti", "Trupti", "3"],
+      ["", "Raj", ""],
+      ["Bhosale", "", "4"],
+      ["", "", ""],
+    ],
+  );
+  const M = mapping({ granularity: "guest", fields: { familyName: 0, guestName: 1, headcount: 2 } });
+
+  it("carries the family name down over blank cells when asked, and pads members up to the block's headcount", () => {
+    const { rows, stats } = buildRows(BLOCK, M, { groupBy: "column:0", fillDown: "yes" }, EVENTS);
+    expect(rows.map((r) => r.name)).toEqual(["Wadiker Family", "Trupti Family", "Bhosale Family"]);
+    expect(rows[0].members.map((m) => m.fullName)).toEqual(["Wadiker masa", "Sonu", "Tush", "Guest 4", "Guest 5"]);
+    expect(rows[1].members.map((m) => m.fullName)).toEqual(["Trupti", "Raj", "Guest 3"]);
+    expect(rows[2].members.map((m) => m.fullName)).toEqual(["Guest 1", "Guest 2", "Guest 3", "Guest 4"]);
+    expect(rows[2].issues).not.toContain("no_members");
+    expect(stats.emptyRows).toBe(1);
+    expect(stats.households).toBe(3);
+  });
+
+  it("treats a blank family cell as its own household when fillDown is no", () => {
+    const { rows } = buildRows(BLOCK, M, { groupBy: "column:0", fillDown: "no" }, EVENTS);
+    expect(rows.map((r) => r.name)).toEqual(["Wadiker Family", "Sonu", "Tush", "Trupti Family", "Raj", "Bhosale Family"]);
   });
 });

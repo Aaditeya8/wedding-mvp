@@ -13,7 +13,7 @@ export type Mapping = {
   confidence: Partial<Record<TargetField, number>>;
 };
 
-export type QuestionId = "granularity" | "groupBy" | "events" | "missingEmail" | "onExisting";
+export type QuestionId = "granularity" | "groupBy" | "fillDown" | "events" | "missingEmail" | "onExisting";
 
 export type Question = {
   id: QuestionId;
@@ -79,6 +79,20 @@ export function buildQuestions(
       text: "How should people be grouped into households? (One invite goes to each household.)",
       options,
       default: fam !== null ? `column:${fam}` : mapping.fields.email !== null ? "email" : "surname",
+    });
+  }
+
+  // Merged cells export as "name on the first row, blanks below" — ask before guessing.
+  const famCol = mapping.granularity === "guest" && mapping.fields.familyName !== null ? profiles[mapping.fields.familyName] : null;
+  if (famCol && famCol.fillRate < 0.7) {
+    qs.push({
+      id: "fillDown",
+      text: `“${famCol.header}” is filled in on only ${Math.round(famCol.fillRate * 100)}% of rows. Do the rows under a family name belong to that family?`,
+      options: [
+        { value: "yes", label: "Yes — a blank cell continues the family above" },
+        { value: "no", label: "No — a blank cell is its own household" },
+      ],
+      default: famCol.fillRate < 0.5 ? "yes" : "no",
     });
   }
 

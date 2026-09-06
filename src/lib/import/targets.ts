@@ -30,12 +30,12 @@ export function normalizeHeader(h: string): string {
 /** Normalised header phrases. Matched whole or as a whole-word phrase inside the header. */
 export const HEADER_SYNONYMS: Record<TargetField, string[]> = {
   familyName: ["family", "family name", "household", "house", "group", "family group", "party", "invitee family", "surname", "family head", "head of family", "guest family"],
-  guestName: ["name", "names", "guest name", "guest names", "full name", "guest", "guests", "member", "members", "invitee", "invitees", "person", "attendee", "name of guest", "guest list"],
+  guestName: ["name", "names", "guest name", "guest names", "full name", "guest", "guests", "member", "members", "invitee", "invitees", "person", "persons", "attendee", "name of guest", "guest list", "details of persons", "detail of persons", "detail of person", "person details", "names of persons", "guest details", "name of guests", "people names", "who"],
   side: ["side", "bride groom", "bride or groom", "bride groom side", "whose side", "from", "ladki ladka", "team", "guest of", "invited by"],
   relation: ["relation", "relationship", "relation to couple", "how related", "connection", "category", "tag", "type", "group type", "circle"],
   email: ["email", "e mail", "email id", "email address", "mail", "mail id", "emailid", "email ids", "contact email"],
   ageGroup: ["age group", "age", "adult child", "adult or child", "type of guest", "kid", "child", "age category"],
-  headcount: ["headcount", "head count", "no of guests", "no of people", "no of persons", "number of guests", "number of people", "count", "pax", "persons", "people", "total", "no of pax", "members count", "qty", "quantity", "seats", "guest count", "total guests", "no of members"],
+  headcount: ["headcount", "head count", "no of guests", "no of people", "no of persons", "no of person", "nos", "nos of persons", "number", "numbers", "number of guests", "number of people", "count", "pax", "persons", "people", "total", "no of pax", "members count", "qty", "quantity", "seats", "guest count", "total guests", "no of members", "persons count", "guests"],
   eventsList: ["events", "event", "invited to", "invited for", "functions", "function", "ceremonies", "invited events", "attending", "invitation for", "invite for"],
 };
 

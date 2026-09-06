@@ -77,7 +77,47 @@ describe("heuristicMapping", () => {
   });
 });
 
+const ROOM_LIST = sheet(
+  ["Sr No", "Family Name", "Detai of Oersons", "Nos", "2 accupency Room", "Qty", "Remark"],
+  [
+    ["1", "Wadiker", "Wadiker masa", "5", "1", "3", ""],
+    ["", "", "Sonu", "", "", "", "one Bed"],
+    ["", "", "Tush", "", "", "", ""],
+    ["2", "Trupti", "Trupti", "3", "0", "0", ""],
+    ["", "", "Raj", "", "", "", ""],
+  ],
+);
+
+describe("heuristicMapping — hotel room list with typos and a sparse family column", () => {
+  it("fuzzy-matches misspelt headers, reads Nos as headcount, and treats rows as people", () => {
+    const m = heuristicMapping(profileColumns(ROOM_LIST), EVENTS);
+    expect(m.fields.familyName).toBe(1);
+    expect(m.fields.guestName).toBe(2);
+    expect(m.fields.headcount).toBe(3);
+    expect(m.granularity).toBe("guest");
+  });
+
+  it("falls back to the fullest unused text column for guest names when no header matches", () => {
+    const s = sheet(["Family", "Whatever", "Nos"], [["Wadiker", "Masa", "3"], ["", "Sonu", ""], ["", "Tush", ""]]);
+    const m = heuristicMapping(profileColumns(s), EVENTS);
+    expect(m.fields.guestName).toBe(1);
+    expect(m.confidence.guestName).toBeLessThan(0.6);
+  });
+});
+
 describe("buildQuestions", () => {
+  it("asks whether blank family cells continue the family above when that column is sparse", () => {
+    const profiles = profileColumns(ROOM_LIST);
+    const m = heuristicMapping(profiles, EVENTS);
+    const qs = buildQuestions(m, profiles, EVENTS, 5);
+    expect(qs.map((q) => q.id)).toEqual(["granularity", "groupBy", "fillDown", "events", "missingEmail"]);
+    const fd = qs.find((q) => q.id === "fillDown")!;
+    expect(fd.options.map((o) => o.value)).toEqual(["yes", "no"]);
+    expect(fd.default).toBe("yes");
+    const planner = profileColumns(PLANNER);
+    expect(buildQuestions(heuristicMapping(planner, EVENTS), planner, EVENTS, 0).some((q) => q.id === "fillDown")).toBe(false);
+  });
+
   it("asks granularity always, and groupBy (defaulting to the family column) for per-guest sheets", () => {
     const profiles = profileColumns(PLANNER);
     const m = heuristicMapping(profiles, EVENTS);

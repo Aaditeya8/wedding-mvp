@@ -20,13 +20,39 @@ const KIND_OK: Record<TargetField, (k: ColumnProfile["kind"]) => boolean> = {
 /** Order matters: the more specific fields claim their columns first. */
 const PRIORITY: TargetField[] = ["email", "familyName", "guestName", "side", "relation", "ageGroup", "headcount", "eventsList"];
 
+function levenshtein(a: string, b: string): number {
+  const dp = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) dp[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+    dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  }
+  return dp[a.length][b.length];
+}
+
+/** "oersons" ≈ "persons", "detai" ≈ "detail": one typo in a word of 4+, two in a word of 7+. */
+function fuzzyToken(a: string, b: string): boolean {
+  if (a === b) return true;
+  if (a.length < 4 || b.length < 4) return false;
+  return levenshtein(a, b) <= (Math.min(a.length, b.length) >= 7 ? 2 : 1);
+}
+
+function fuzzyPhraseIn(headerTokens: string[], synTokens: string[]): boolean {
+  if (synTokens.length > headerTokens.length) return false;
+  for (let start = 0; start + synTokens.length <= headerTokens.length; start++) {
+    if (synTokens.every((s, k) => fuzzyToken(headerTokens[start + k], s))) return true;
+  }
+  return false;
+}
+
 function headerScore(header: string, field: TargetField): number {
   const norm = normalizeHeader(header);
   if (!norm) return 0;
   let best = 0;
+  const tokens = norm.split(" ");
   for (const syn of HEADER_SYNONYMS[field]) {
     if (norm === syn) return 1;
     if (new RegExp(`\\b${syn}\\b`).test(norm)) best = Math.max(best, 0.8);
+    else if (best < 0.7 && fuzzyPhraseIn(tokens, syn.split(" "))) best = 0.7;
   }
   return best;
 }
@@ -78,11 +104,12 @@ export function heuristicMapping(profiles: ColumnProfile[], events: EventRef[]):
     const p = profiles.find((p) => !used.has(p.index) && p.kind === "email");
     if (p) { fields.email = p.index; confidence.email = 0.6; used.add(p.index); }
   }
-  if (fields.guestName === null && fields.familyName === null) {
+  // No header told us where the names are: the fullest, most varied text column usually is.
+  if (fields.guestName === null) {
     const p = profiles
-      .filter((p) => !used.has(p.index) && p.kind === "text" && p.fillRate >= 0.8)
+      .filter((p) => !used.has(p.index) && p.kind === "text" && p.fillRate >= 0.7)
       .sort((a, b) => b.distinct - a.distinct)[0];
-    if (p) { fields.guestName = p.index; confidence.guestName = 0.4; used.add(p.index); }
+    if (p) { fields.guestName = p.index; confidence.guestName = fields.familyName === null ? 0.4 : 0.5; used.add(p.index); }
   }
 
   // Granularity: one person per row, or one household per row?
