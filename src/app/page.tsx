@@ -7,6 +7,8 @@ import { Petals } from "./w/[slug]/sections/Petals";
 import { SiteHeader } from "./home/SiteHeader";
 import { LivePreview } from "./home/LivePreview";
 import { RsvpDemo } from "./home/RsvpDemo";
+import { InviteCard } from "./home/InviteCard";
+import { CountUp } from "./home/CountUp";
 
 export const metadata = {
   title: `${BRAND} — ${BRAND_TAGLINE}`,
@@ -48,41 +50,57 @@ export default function Home() {
 
       <main>
         {/* ── hero ─────────────────────────────────────────── */}
-        <section className="relative flex min-h-[88svh] flex-col items-center justify-center overflow-hidden px-6 py-24 text-center">
+        <section className="relative overflow-hidden px-6 py-20 md:py-24">
           <Petals />
           <span
             aria-hidden
-            className="font-display parallax pointer-events-none absolute left-1/2 top-1/2 select-none italic leading-none"
-            style={{ fontSize: "min(72vw, 820px)", color: "var(--ink)", opacity: 0.045 }}
+            className="font-display parallax pointer-events-none absolute left-1/2 top-1/3 select-none italic leading-none"
+            style={{ fontSize: "min(72vw, 820px)", color: "var(--ink)", opacity: 0.04 }}
           >
             &amp;
           </span>
 
-          <p className="kicker rise rise-1">Indian wedding invitations</p>
-          <h1
-            className="font-display rise rise-2 mt-6 tracking-tight"
-            style={{ fontSize: "clamp(3rem, 11vw, 8.5rem)", lineHeight: 0.92 }}
-          >
-            Five days.<br />
-            <em className="foil italic">One</em> link.
-          </h1>
+          <div className="relative mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2 md:gap-12">
+            <div className="text-center md:text-left">
+              <p className="kicker rise rise-1">Indian wedding invitations</p>
+              <h1
+                className="font-display rise rise-2 mt-6 tracking-tight"
+                style={{ fontSize: "clamp(3rem, 8.5vw, 6.5rem)", lineHeight: 0.92 }}
+              >
+                Five days.<br />
+                <em className="foil italic">One</em> link.
+              </h1>
 
-          <div className="rise rise-3 mt-10">
-            <Ornament theme="ivory-editorial" slot="hero" anim="load" />
+              <div className="rise rise-3 mt-8 flex justify-center md:justify-start">
+                <Ornament theme="ivory-editorial" slot="hero" anim="load" />
+              </div>
+
+              <p className="rise rise-3 mx-auto mt-8 max-w-md text-base leading-relaxed md:mx-0 md:text-lg" style={{ color: "var(--ink-soft)" }}>
+                A wedding site that holds every celebration, asks each guest which ones
+                they&apos;re coming to, and counts the answers for you. Built in two
+                minutes, shared on WhatsApp.
+              </p>
+
+              <div className="rise rise-4 mt-10 flex flex-wrap items-center justify-center gap-3 md:justify-start">
+                <Link href="/start" className="cta">Create your site — free</Link>
+                <Link href="/w/ananya-weds-arjun" className="cta-ghost">See a real one</Link>
+              </div>
+            </div>
+
+            <div className="rise rise-3 flex justify-center md:justify-end">
+              <InviteCard />
+            </div>
           </div>
+        </section>
 
-          <p className="rise rise-3 mt-8 max-w-xl text-base leading-relaxed md:text-lg" style={{ color: "var(--ink-soft)" }}>
-            A wedding site that holds every celebration, asks each guest which ones
-            they&apos;re coming to, and counts the answers for you. Built in two minutes,
-            shared on WhatsApp.
-          </p>
-
-          <div className="rise rise-4 mt-10 flex flex-wrap items-center justify-center gap-3">
-            <Link href="/start" className="cta">Create your site — free</Link>
-            <Link href="/w/ananya-weds-arjun" className="cta-ghost">See a real one</Link>
+        {/* ── the shape of the thing, in four numbers ──────── */}
+        <section className="mx-auto max-w-5xl px-6 pb-4 pt-8">
+          <div className="reveal grid grid-cols-2 gap-10 md:grid-cols-4 md:gap-6">
+            <CountUp to={15} label="Ceremonies" note="Roka to Griha Pravesh, ready to drop on your timeline." />
+            <CountUp to={6} label="Looks" note="Swap whenever. Every page and email follows." />
+            <CountUp to={2} suffix=" min" label="To go live" note="Names, date, city. The rest can wait." />
+            <CountUp to={0} label="Accounts" note="Not for you, and not for your grandmother." />
           </div>
-
-          <span aria-hidden className="scroll-cue absolute bottom-8" />
         </section>
 
         {/* ── the live product ─────────────────────────────── */}

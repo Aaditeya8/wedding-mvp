@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BRAND } from "@/lib/brand";
 
 const LINKS = [
@@ -12,12 +12,25 @@ const LINKS = [
 
 export function SiteHeader() {
   const [stuck, setStuck] = useState(false);
+  const bar = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setStuck(window.scrollY > 24);
+    // The progress line is written straight to a CSS variable rather than
+    // through React state: this runs on every scroll frame, and re-rendering
+    // the header that often would be the most expensive thing on the page.
+    const onScroll = () => {
+      setStuck(window.scrollY > 24);
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+      bar.current?.style.setProperty("--p", String(p));
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   return (
@@ -39,6 +52,7 @@ export function SiteHeader() {
           <Link href="/start" className="cta">Create your site</Link>
         </div>
       </div>
+      <span ref={bar} className="scroll-progress w-full" aria-hidden />
     </header>
   );
 }

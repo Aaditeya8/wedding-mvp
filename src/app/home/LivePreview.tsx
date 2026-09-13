@@ -21,6 +21,8 @@ export function LivePreview() {
   const [theme, setTheme] = useState<Theme>("ivory-editorial");
   const [touched, setTouched] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const phone = useRef<HTMLDivElement>(null);
 
   // Auto-cycle: only while it's on screen, only until someone interacts, and
   // never when the visitor has asked for less motion.
@@ -46,6 +48,33 @@ export function LivePreview() {
     return () => { io.disconnect(); if (timer) clearInterval(timer); };
   }, [touched]);
 
+  // Same tilt as the invitation card — the device should feel held, not printed.
+  useEffect(() => {
+    const el = stage.current;
+    const p = phone.current;
+    if (!el || !p) return;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const onMove = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      p.style.setProperty("--tx", `${x * 14}deg`);
+      p.style.setProperty("--ty", `${-y * 10}deg`);
+    };
+    const reset = () => {
+      p.style.setProperty("--tx", "0deg");
+      p.style.setProperty("--ty", "0deg");
+    };
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerleave", reset);
+    return () => {
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerleave", reset);
+    };
+  }, []);
+
   function choose(t: Theme) {
     setTouched(true);
     setTheme(t);
@@ -53,8 +82,8 @@ export function LivePreview() {
 
   return (
     <div ref={frame} className="grid items-center gap-12 md:grid-cols-[auto_1fr] md:gap-16">
-      <div className="justify-self-center">
-        <div className="device">
+      <div ref={stage} className="card3d-stage justify-self-center">
+        <div ref={phone} className="device device-tilt">
           <span aria-hidden className="device-notch" />
           <div data-theme={theme} className="device-screen">
             {/* key replays the entrance animation on every theme change */}

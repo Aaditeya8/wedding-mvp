@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Nimantran">
+  <rect width="64" height="64" rx="14" fill="#232323"/>
+  <!-- marigold ring: the flower strung over every Indian wedding doorway -->
+  <g fill="none" stroke="#e8930c" stroke-width="2.5" opacity="0.55">
+    <circle cx="32" cy="32" r="25.5"/>
+  </g>
+  <!-- the ampersand is the brand mark: two families, one line -->
+  <text x="32" y="43.5" text-anchor="middle"
+        font-family="Georgia, 'Times New Roman', serif" font-style="italic"
+        font-size="34" fill="#e8930c">&amp;</text>
+</svg>
