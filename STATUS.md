@@ -1,3 +1,70 @@
+# Status — 13 September 2026 — **LIVE** 🎉
+
+## https://wedding-mvp-six.vercel.app — Vercel + Neon, `main` pushed
+
+The pilot stopped being a seeded demo and became something a couple can sign up for,
+fill in and share the same evening. `feat/guest-intake` merged into `main` along the way.
+
+- **`/start` — self-serve signup.** Names, date, city, theme, email → creates the
+  wedding, five starter ceremonies placed around the date, and the couple's login,
+  then mails a magic link that lands them straight in the editor. An email that
+  already has a wedding gets a fresh sign-in link, never a second wedding.
+- **`/couple/site` — the editor.** Names, parents ("with the blessings of"), date,
+  city, tagline, story, hashtag, family contact, theme. Events from a picker of
+  **fifteen Indian ceremonies** (Roka, Engagement, Ganesh Puja, Haldi, Mehendi,
+  Sangeet, Baraat, Pheras, Nikah, Muhurtham, Anand Karaj, Reception, Walima, Vidaai,
+  Griha Pravesh) — each with venue, address, map link, dress code, a line of
+  description, reorder, sort-by-date, delete, and an **on/off switch** so a
+  family-only puja disappears from the shared link without being deleted.
+  Travel & stay is now `weddings.travel` jsonb, not a slug-keyed constant.
+  RSVP window: open/closed + reply-by date.
+- **`/w/[slug]/rsvp` — the open RSVP.** The link the couple actually shares. Name,
+  phone/email, side, food preference, names coming, per-event attending + headcount,
+  note. Guests land in the same `families`/`guests`/`rsvps` tables the committee
+  reads (`source: "guest"`, badged "via link"), deduped by email then normalised
+  phone, and get an edit link back. Emailed token links keep working untouched.
+- **Share card** on `/couple` and the editor: link, copy, WhatsApp message, QR.
+- **`/` is a real landing page** (hero, how it works, six themes, features, CTA).
+  Committee views opened to couples, not just staff.
+
+### Two real bugs found and fixed
+1. **Guest links were built from `APP_URL`.** That string is the product — a couple
+   copies it once and sends it to three hundred people — and a stale or unset
+   `APP_URL` silently minted links nobody could open. Caught by e2e on port 3001,
+   where the dashboard offered a `:3000` link to share. `src/lib/origin.ts`
+   (`appOrigin()`) now reads the forwarded host off the live request; the guest's
+   own edit link is origin-relative and resolved in the browser. E2E asserts the
+   shared link matches the host the couple is on.
+2. **Mail would have crashed in production.** The outbox was a file append, and
+   Vercel's filesystem is read-only. Mail with no SMTP configured is now recorded
+   in an `outbox` table; `/admin/mailroom` reads it. The file write survives as a
+   best-effort convenience for local dev and tests.
+
+### Also
+- Seed no longer wipes the whole `users` table — it owns only the two demo weddings
+  and its own staff rows, so re-seeding production can't delete a real couple.
+- Migration `0003_self-serve.sql`: `family_source` enum, `outbox` table, and the new
+  wedding/event/family columns.
+- Public-site section numbers are computed from what the wedding actually shows, so
+  a site with no story or no travel doesn't skip a number.
+
+### Validation
+**120 unit** ✅ · **3 e2e** ✅ (emailed-link RSVP, signup→edit→open RSVP→dashboard,
+RSVP switched off) · tsc ✅ · build ✅ · production smoke: signup → magic link →
+editor → share link → guest RSVP → couple dashboard, all against Neon, plus mobile
+(390px) on the dark theme. Zero console errors in production. Test data cleaned up.
+
+### ⚠️ Pending from Aadi
+1. **Gmail app password** — the one blocker for real customers. Without it,
+   `EMAIL_MODE=file` records sign-in links and invites to the `outbox` table
+   (visible at `/admin/mailroom`) instead of delivering them. To go live:
+   `vercel env add SMTP_USER production`, `SMTP_PASS`, `EMAIL_FROM`, then set
+   `EMAIL_MODE=smtp` and redeploy.
+2. **`AI_API_KEY`** (optional) — enables AI column-matching and photo reading in the
+   guest-list import. The heuristic matcher works without it. The Groq key in
+   `~/projects/t-minus/.env.local` is alive and would do.
+3. A nicer domain than `wedding-mvp-six.vercel.app`, when you want one.
+
 # Status — 6 September 2026 (evening)
 
 ## Real list + incremental adds + scanning (`feat/guest-intake`, verified in browser)

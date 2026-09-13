@@ -9,6 +9,19 @@ real enough to put in front of a paying couple.
 
 ## What it does
 
+- **Self-serve signup** — `/start`. Names, date, city, a theme, an email. Creates the
+  wedding, five starter ceremonies around the date, and the couple's login, then mails
+  a magic link that lands them in the editor. No sales call, no seed script.
+- **Site editor** — `/couple/site`. The couple owns every word guests see: names,
+  parents ("with the blessings of"), date, city, story, hashtag, theme. Celebrations
+  come from a picker of fifteen Indian ceremonies (Roka through Griha Pravesh), each
+  with venue, map link, dress code, a line of description, reordering, and an on/off
+  switch so a family-only puja stays off the shared link without being deleted.
+  Travel & stay and the RSVP window (open/closed, reply-by date) live here too.
+- **Open RSVP** — `/w/[slug]/rsvp`. The link the couple shares. Anyone who has it
+  answers per celebration with a headcount, food preference and the names coming;
+  they land in the same tables the committee reads, deduped by email then phone, and
+  get their own edit link back. The emailed per-family token links still work.
 - **Public wedding site** — `/w/[slug]`. Hero, story, event timeline, travel & stay,
   gallery, RSVP call-to-action. Six switchable themes, server-rendered, with per-wedding
   Open Graph metadata so a link shared on WhatsApp unfurls properly.
@@ -24,8 +37,8 @@ real enough to put in front of a paying couple.
   Word/PDF/text file, or a pasted WhatsApp message; or type households straight in.
   Households already on the list are recognised by email, name, or the same people and
   merged by default, so the list can keep growing without duplicates.
-- **Couple dashboard** — `/couple`. RSVP stats, who hasn't replied, and a live theme
-  switcher for their own site.
+- **Couple dashboard** — `/couple`. The share card (link, copy, WhatsApp, QR), RSVP
+  stats, who hasn't replied, and a live theme switcher for their own site.
 - **Admin** — `/admin`. All weddings, staff, delivery log, plus `/admin/mailroom`, an
   outbox viewer for magic links and invite mail.
 - **Invite email** — themed to match the couple's site, rendered with React Email,
@@ -69,8 +82,8 @@ committee, committee, and the second wedding's couple — then re-seed:
 SEED_STAFF_EMAILS='you@gmail.com,you+couple@gmail.com,you+chachu@gmail.com,you+planner@gmail.com,you+karishma@gmail.com' npm run seed
 ```
 
-There is no self-signup by design: `signIn` rejects any address that isn't already a
-provisioned user row, so the seed is the only provisioning path.
+`signIn` rejects any address that isn't already a provisioned user row. Couples
+provision themselves through `/start`; the seed provisions the demo staff.
 
 ### Commands
 
@@ -80,8 +93,8 @@ provisioned user row, so the seed is the only provisioning path.
 | `npm run build` | Production build (uses a throwaway in-memory DB) |
 | `npm run seed` | Migrate + reseed both demo weddings, print RSVP links |
 | `npm run db:reset` | Delete `var/pglite` and reseed from scratch |
-| `npm test` | Vitest unit suite (95 tests) |
-| `npm run e2e` | Playwright end-to-end guest RSVP flow |
+| `npm test` | Vitest unit suite (120 tests) |
+| `npm run e2e` | Playwright: emailed-link RSVP, self-serve signup, open RSVP |
 
 ### Environment
 
@@ -89,8 +102,8 @@ provisioned user row, so the seed is the only provisioning path.
 |---|---|
 | `DATABASE_URL` | Neon connection string. **Leave unset** locally to use embedded PGlite. |
 | `AUTH_SECRET` | Auth.js signing secret — `openssl rand -base64 33` |
-| `APP_URL` | Base URL used to build RSVP links |
-| `EMAIL_MODE` | `file` (outbox) or `smtp` (real delivery) |
+| `APP_URL` | Fallback only. Live links come from the request host (`src/lib/origin.ts`); this covers the seed script and tests. |
+| `EMAIL_MODE` | `smtp` (real delivery, needs SMTP_USER + SMTP_PASS) or anything else (records to the `outbox` table, readable at `/admin/mailroom`) |
 | `SMTP_USER` / `SMTP_PASS` | Gmail address + app password, when `EMAIL_MODE=smtp` |
 | `EMAIL_FROM` | Display sender, e.g. `"Ananya & Arjun <you@gmail.com>"` |
 | `SEED_STAFF_EMAILS` | Optional. Five comma-separated staff logins for the seed. |
@@ -103,15 +116,19 @@ provisioned user row, so the seed is the only provisioning path.
 ```
 src/
   app/
+    start/           self-serve signup + "check your inbox"
     w/[slug]/        public wedding site + its sections
-    rsvp/[token]/    guest RSVP page and server action
-    couple/          couple dashboard
+      rsvp/          open RSVP from the shared link
+    rsvp/[token]/    per-family RSVP page and server action
+    couple/          couple dashboard + share card
+      site/          the site editor (details, events, travel, RSVP window)
     committee/       guest operations
       import/        spreadsheet / direct-entry intake wizard
     admin/           overview, per-wedding detail, mailroom
     signin/          magic-link sign-in
   db/                Drizzle schema + the PGlite/Neon client switch
-  lib/               rsvp, invites, tokens, mailer, authz, ratelimit, ai (chat seam)
+  lib/               rsvp, open-rsvp, signup, editor, presets, slug, origin,
+                     invites, tokens, mailer, authz, ratelimit, ai (chat seam)
     import/          spreadsheet parse → profile → heuristic/AI mapping → normalise → match → commit; scan (docx/pdf/txt/photo)
   themes/            theme catalog, CSS custom-property tokens, SVG ornaments
   emails/            React Email invite template
@@ -141,8 +158,12 @@ actually be read.
 
 ## Status
 
-Feature-complete for the pilot demo and verified in a browser: 95 unit tests, a Playwright
-RSVP happy path, and a clean production build. Guest intake (spreadsheet, scan, direct
-entry, incremental merge) added 2026-09-06 on `feat/guest-intake`. Not yet deployed. `docs/DEMO-RUNBOOK.md`
-covers the Neon + Vercel + Gmail setup and the demo script; `STATUS.md` is the running
-build log.
+**Live at https://wedding-mvp-six.vercel.app** (Vercel + Neon), deployed 2026-09-13.
+120 unit tests, three Playwright end-to-end flows, clean production build.
+
+Couples can sign up, edit and share without anyone touching a script. The one thing
+still pending is outbound email: with no `SMTP_USER`/`SMTP_PASS` set, sign-in links and
+invites are recorded in the `outbox` table and read at `/admin/mailroom` rather than
+delivered. Add a Gmail app password and set `EMAIL_MODE=smtp` to turn delivery on.
+
+`docs/DEMO-RUNBOOK.md` covers the demo script; `STATUS.md` is the running build log.
