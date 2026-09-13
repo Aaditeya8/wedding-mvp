@@ -3,6 +3,7 @@ import { db } from "@/db/client";
 import { weddings, families, eventInvites, rsvps } from "@/db/schema";
 import { generateInviteToken, tokenExpiry } from "@/lib/tokens";
 import { sendInvite } from "@/lib/mailer";
+import { appOrigin } from "@/lib/origin";
 
 export type InviteType = "invite" | "resend" | "remind";
 
@@ -19,7 +20,7 @@ export async function issueInvites(
   const [wedding] = await db.select().from(weddings).where(eq(weddings.id, weddingId));
   if (!wedding) return familyIds.map((familyId) => ({ familyId, ok: false, error: "wedding not found" }));
   const coupleNames = `${wedding.brideName} & ${wedding.groomName}`;
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
+  const appUrl = await appOrigin();
 
   const results: IssueResult[] = [];
   for (const familyId of familyIds) {
@@ -27,6 +28,12 @@ export async function issueInvites(
       .where(and(eq(families.id, familyId), eq(families.weddingId, weddingId)));
     if (!family) {
       results.push({ familyId, ok: false, error: "family not in wedding" });
+      continue;
+    }
+    // Imported households may arrive without an email (WhatsApp-only lists);
+    // nothing to send to until the committee adds one.
+    if (!family.email.trim()) {
+      results.push({ familyId, ok: false, error: "no email" });
       continue;
     }
 

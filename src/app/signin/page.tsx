@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { signIn } from "@/auth";
+import { BRAND } from "@/lib/brand";
 
 export default async function SignInPage({
   searchParams,
@@ -22,9 +24,9 @@ export default async function SignInPage({
   return (
     <main className="portal-page flex items-center justify-center p-6">
       <div className="portal-panel w-full max-w-md p-7 md:p-9">
-        <p className="portal-eyebrow">Wedding operations</p>
-        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Staff sign in</h1>
-        <p className="mt-2 text-sm leading-relaxed text-neutral-500">Use the email address provisioned for your wedding role. We&apos;ll send a single-use link.</p>
+        <p className="portal-eyebrow">{BRAND}</p>
+        <h1 className="mt-2 text-2xl font-semibold tracking-tight">Sign in</h1>
+        <p className="mt-2 text-sm leading-relaxed text-neutral-500">Couples, planners and family — use the email your wedding is set up with. We&apos;ll send a single-use link, no password.</p>
         {sent ? (
           <p className="mt-6 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950">
             If that address is on the team, a sign-in link is on its way. Check your email.
@@ -49,6 +51,9 @@ export default async function SignInPage({
             </button>
           </form>
         )}
+        <p className="mt-6 text-center text-xs text-neutral-500">
+          New here? <Link href="/start" className="underline underline-offset-4">Create your wedding site</Link> — it takes two minutes.
+        </p>
       </div>
     </main>
   );

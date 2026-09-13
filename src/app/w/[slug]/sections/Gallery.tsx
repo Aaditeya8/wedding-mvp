@@ -9,10 +9,10 @@ const PLATES = [
   { src: "/gallery/lotus.svg", alt: "Lotus illustration", tall: true },
 ];
 
-export function Gallery({ theme: _theme }: { theme: string }) {
+export function Gallery({ theme: _theme, no = "04" }: { theme: string; no?: string }) {
   return (
     <section className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-      <SectionHeader no="04" title="Gallery" />
+      <SectionHeader no={no} title="Gallery" />
       <div className="columns-2 gap-4 md:columns-3 md:gap-6 [&>div]:mb-4 md:[&>div]:mb-6">
         {PLATES.map((p, i) => (
           <div

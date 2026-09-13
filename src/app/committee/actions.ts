@@ -11,7 +11,7 @@ import { issueInvites } from "@/lib/invites";
 /* Admin may act on any wedding (passes it explicitly); committee is pinned
    to their own. Every action re-resolves this server-side — never trust input. */
 async function scopedWeddingId(requested: string): Promise<string | null> {
-  const staff = await requireRole(["committee", "admin"]);
+  const staff = await requireRole(["committee", "couple", "admin"]);
   if (staff.role === "admin") return requested;
   return staff.weddingId;
 }

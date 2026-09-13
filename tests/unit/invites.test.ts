@@ -80,4 +80,14 @@ describe("issueInvites", () => {
     const res = await issueInvites(other.id, [famFresh], "invite");
     expect(res[0]).toMatchObject({ ok: false, error: "family not in wedding" });
   });
+
+  it("skips families with no email instead of handing the mailer an empty recipient", async () => {
+    const [noMail] = await db.insert(families).values({
+      weddingId, name: "WhatsApp-only Family", side: "both", email: "",
+    }).returning();
+    const res = await issueInvites(weddingId, [noMail.id], "invite");
+    expect(res).toEqual([{ familyId: noMail.id, ok: false, error: "no email" }]);
+    const logs = await db.select().from(emailLog).where(eq(emailLog.familyId, noMail.id));
+    expect(logs).toHaveLength(0);
+  });
 });

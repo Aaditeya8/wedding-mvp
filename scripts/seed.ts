@@ -1,7 +1,7 @@
 import { closeDb, db, migrateDb } from "@/db/client";
 import { weddings, events, families, guests, eventInvites, rsvps, users } from "@/db/schema";
 import { generateInviteToken, tokenExpiry } from "@/lib/tokens";
-import { eq } from "drizzle-orm";
+import { eq, inArray, or } from "drizzle-orm";
 
 // Seeded staff logins in role order: [admin, couple, committee, committee], plus a
 // second couple for the second wedding. Override with SEED_STAFF_EMAILS (comma-separated,
@@ -64,20 +64,31 @@ const GK_FAMILIES: [string, "bride" | "groom" | "both", string, string, string[]
 
 async function main() {
   await migrateDb();
-  // Seed is the only provisioning path, so it owns the users table outright.
-  // (Deleting by STAFF_EMAILS broke idempotency the moment the list changed:
-  // old rows survived and their wedding FK blocked the wedding delete below.)
-  await db.delete(users);
-  for (const slug of ["ananya-weds-arjun", "gaurav-weds-karishma"]) {
-    const existing = await db.select().from(weddings).where(eq(weddings.slug, slug));
-    if (existing[0]) await db.delete(weddings).where(eq(weddings.id, existing[0].id));
-  }
+  // The seed owns the two demo weddings and the staff logins it creates — and
+  // nothing else. Couples who signed up themselves (and their weddings) survive
+  // a re-seed, which matters once this runs against production.
+  const demoSlugs = ["ananya-weds-arjun", "gaurav-weds-karishma"];
+  const demo = await db.select({ id: weddings.id }).from(weddings).where(inArray(weddings.slug, demoSlugs));
+  const demoIds = demo.map((w) => w.id);
+  await db.delete(users).where(
+    demoIds.length ? or(inArray(users.email, STAFF_EMAILS), inArray(users.weddingId, demoIds)) : inArray(users.email, STAFF_EMAILS),
+  );
+  if (demoIds.length) await db.delete(weddings).where(inArray(weddings.id, demoIds));
 
   const [w] = await db.insert(weddings).values({
     slug: "ananya-weds-arjun", brideName: "Ananya", groomName: "Arjun",
     theme: "ivory-editorial", weddingDate: WEDDING_DATE,
     heroTagline: "Two families, five celebrations, one big yes.",
     story: "They met over a spilled filter coffee at a Bengaluru hackathon in 2021. Four years, two cities and one very persistent golden retriever later — here we are.",
+    city: "Mumbai", brideParents: "Sunita & Rajesh Sharma", groomParents: "Kavita & Vikram Mehta", hashtag: "AnanyaKaArjun",
+    contactPhone: "+91 98200 00000 (Rohit)",
+    travel: {
+      stays: [
+        { name: "Taj Lands End, Bandra", note: "Home of the Sangeet. A wedding block is reserved — mention the couple's names when booking." },
+        { name: "Grand Hyatt, Santacruz", note: "The Reception happens under this roof, and it is the closest comfortable stay to the airport." },
+      ],
+      gettingThere: "Flying in? Land at Mumbai (BOM). Both hotels are 20–40 minutes from the terminals, and the Pheras venue in Juhu is a fifteen-minute drive from either — leave buffer for Mumbai traffic on the wedding morning.",
+    },
   }).returning();
 
   const evs = await db.insert(events).values(
@@ -112,6 +123,14 @@ async function main() {
     theme: "pichwai-bagh", weddingDate: GK_WEDDING_DATE,
     heroTagline: "A Delhi love story, sealed on a lake in Udaipur.",
     story: "Matched by an aunty, ignored the aunty, then matched again by an app three years later. Some things are just written — this one twice.",
+    city: "Udaipur", brideParents: "Ritu & Deepak Malhotra", groomParents: "Poonam & Ashok Saxena", hashtag: "GKForever",
+    travel: {
+      stays: [
+        { name: "Taj Fateh Prakash Palace, Udaipur", note: "Home of the Reception, right on Lake Pichola. A wedding block is reserved — mention the couple's names when booking." },
+        { name: "The Leela Palace, Udaipur", note: "A short boat ride from the Pheras at Jagmandir. Shuttles run to both wedding-day venues." },
+      ],
+      gettingThere: "The Delhi celebrations are at private venues — no stay needed. For the wedding days, fly into Udaipur (UDR), thirty minutes from the lake. The Pheras at Jagmandir Island are reached by boat from the City Palace jetty; departures start an hour before.",
+    },
   }).returning();
 
   const gkEvs = await db.insert(events).values(

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Instrument_Serif, Cormorant_Garamond, Fraunces, Inter, Marcellus, Rozha_One, Prata } from "next/font/google";
 import "./globals.css";
+import { BRAND, BRAND_TAGLINE } from "@/lib/brand";
 
 const instrument = Instrument_Serif({
   weight: "400", style: ["normal", "italic"], subsets: ["latin"], variable: "--font-instrument",
@@ -17,8 +18,8 @@ const rozha = Rozha_One({ weight: "400", subsets: ["latin"], variable: "--font-r
 const prata = Prata({ weight: "400", subsets: ["latin"], variable: "--font-prata" });
 
 export const metadata: Metadata = {
-  title: "Wedding",
-  description: "Wedding invitations & RSVP",
+  title: { default: BRAND, template: `%s · ${BRAND}` },
+  description: BRAND_TAGLINE,
 };
 
 export default function RootLayout({

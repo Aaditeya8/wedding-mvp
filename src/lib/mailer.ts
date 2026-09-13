@@ -3,7 +3,7 @@ import path from "node:path";
 import nodemailer from "nodemailer";
 import { render } from "@react-email/components";
 import { db } from "@/db/client";
-import { emailLog } from "@/db/schema";
+import { emailLog, outbox } from "@/db/schema";
 import { InviteEmail } from "@/emails/InviteEmail";
 
 type SendArgs = {
@@ -11,18 +11,42 @@ type SendArgs = {
   rsvpUrl: string; theme: string; type: "invite" | "reminder" | "resend";
 };
 
-async function deliver(to: string, subject: string, html: string, rsvpUrl: string) {
-  if (process.env.EMAIL_MODE === "smtp") {
-    const transport = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    });
-    await transport.sendMail({ from: process.env.EMAIL_FROM, to, subject, html });
-  } else {
+export const smtpConfigured = () =>
+  process.env.EMAIL_MODE === "smtp" && !!process.env.SMTP_USER && !!process.env.SMTP_PASS;
+
+export function smtpTransport() {
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+  });
+}
+
+/**
+ * Where mail goes when nothing can send it: a database row (readable at
+ * /admin/mailroom, works on Vercel's read-only filesystem) plus, best-effort,
+ * the local outbox file that dev tooling and tests read.
+ */
+export async function recordOutbox(m: {
+  to: string; subject: string; kind: "signin" | "invite"; link?: string; html?: string;
+}) {
+  await db.insert(outbox).values({ to: m.to, subject: m.subject, kind: m.kind, link: m.link ?? null });
+  try {
     const dir = path.join(process.cwd(), "var/outbox");
     fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(path.join(dir, "mail.jsonl"),
-      JSON.stringify({ to, subject, html, rsvpUrl, at: new Date().toISOString() }) + "\n");
+    const line = m.kind === "signin"
+      ? { to: m.to, subject: m.subject, signInUrl: m.link, at: new Date().toISOString() }
+      : { to: m.to, subject: m.subject, html: m.html, rsvpUrl: m.link, at: new Date().toISOString() };
+    fs.appendFileSync(path.join(dir, "mail.jsonl"), JSON.stringify(line) + "\n");
+  } catch {
+    // read-only filesystem (Vercel) — the database row is the record
+  }
+}
+
+async function deliver(to: string, subject: string, html: string, rsvpUrl: string) {
+  if (smtpConfigured()) {
+    await smtpTransport().sendMail({ from: process.env.EMAIL_FROM, to, subject, html });
+  } else {
+    await recordOutbox({ to, subject, kind: "invite", link: rsvpUrl, html });
   }
 }
 

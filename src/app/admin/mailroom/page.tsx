@@ -1,30 +1,12 @@
-import fs from "node:fs";
-import path from "node:path";
 import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
-import { emailLog, families } from "@/db/schema";
+import { emailLog, families, outbox } from "@/db/schema";
 import { requireRole } from "@/lib/authz";
+import { smtpConfigured } from "@/lib/mailer";
 
 export const dynamic = "force-dynamic";
 
-type OutboxMail = {
-  to: string;
-  subject: string;
-  signInUrl?: string;
-  rsvpUrl?: string;
-  at?: string;
-};
-
-function readOutbox(): OutboxMail[] {
-  const file = path.join(process.cwd(), "var/outbox/mail.jsonl");
-  if (!fs.existsSync(file)) return [];
-  return fs.readFileSync(file, "utf8")
-    .trim().split("\n").filter(Boolean)
-    .map((line) => { try { return JSON.parse(line) as OutboxMail; } catch { return null; } })
-    .filter((m): m is OutboxMail => m !== null)
-    .reverse();
-}
 
 function fmtTime(iso?: string | Date) {
   if (!iso) return "—";
@@ -36,8 +18,8 @@ function fmtTime(iso?: string | Date) {
 export default async function MailroomPage() {
   await requireRole(["admin"]);
 
-  const outbox = readOutbox().slice(0, 50);
-  const smtpMode = process.env.EMAIL_MODE === "smtp";
+  const mails = await db.select().from(outbox).orderBy(desc(outbox.at)).limit(50);
+  const smtpMode = smtpConfigured();
   const log = await db.select({
     type: emailLog.type, status: emailLog.status, sentAt: emailLog.sentAt,
     familyName: families.name, familyEmail: families.email,
@@ -61,7 +43,7 @@ export default async function MailroomPage() {
             </p>
           </div>
           <span className="portal-badge">
-            {smtpMode ? "SMTP mode — mails go to real inboxes" : "File mode — mails land here, nothing is sent"}
+            {smtpMode ? "SMTP mode — mails go to real inboxes" : "Outbox mode — mails land here, nothing is sent"}
           </span>
         </header>
 
@@ -71,9 +53,9 @@ export default async function MailroomPage() {
               <p className="portal-eyebrow">Outbox</p>
               <h2 className="mt-1 font-semibold">Latest mail, newest first</h2>
             </div>
-            <p className="text-xs text-neutral-400">last {outbox.length} of the local outbox</p>
+            <p className="text-xs text-neutral-400">last {mails.length} recorded</p>
           </div>
-          {outbox.length === 0 ? (
+          {mails.length === 0 ? (
             <p className="p-5 pt-4 text-sm text-neutral-500">
               Nothing here yet. Request a magic link from the sign-in page or send an invite
               from the committee view — it will appear at the top of this list.
@@ -89,11 +71,11 @@ export default async function MailroomPage() {
                 </tr>
               </thead>
               <tbody>
-                {outbox.map((m, i) => {
-                  const link = m.signInUrl ?? m.rsvpUrl;
-                  const isSignIn = Boolean(m.signInUrl);
+                {mails.map((m) => {
+                  const link = m.link;
+                  const isSignIn = m.kind === "signin";
                   return (
-                    <tr key={i} className="border-b border-neutral-100 last:border-0">
+                    <tr key={m.id} className="border-b border-neutral-100 last:border-0">
                       <td>
                         <span className="portal-badge">{isSignIn ? "sign-in" : "invite"}</span>
                       </td>

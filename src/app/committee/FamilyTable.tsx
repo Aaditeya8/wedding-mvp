@@ -11,6 +11,9 @@ export type Row = {
   side: "bride" | "groom" | "both";
   relation: string | null;
   email: string;
+  phone?: string | null;
+  diet?: string | null;
+  source?: "committee" | "import" | "guest";
   members: { fullName: string; ageGroup: "adult" | "child" }[];
   eventIds: string[];
   rsvpByEvent: Record<string, { status: "attending" | "declined"; headcount: number; note: string | null }>;
@@ -71,6 +74,9 @@ export function FamilyTable({
         >
           Add family
         </button>
+        <a href={`/committee/import?wedding=${weddingId}`} className="portal-button-secondary">
+          Import guest list
+        </a>
         <div className="mx-1 hidden h-6 w-px bg-neutral-200 sm:block" />
         <button
           disabled={!ids.length || pending}
@@ -139,9 +145,14 @@ export function FamilyTable({
                       {r.side}
                     </span>
                     {r.relation}
+                    {r.source === "guest" && <span className="ml-1 rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 font-medium text-violet-700">via link</span>}
+                    {r.diet && <span className="ml-1 rounded border border-neutral-200 px-1.5 py-0.5">{r.diet}</span>}
                   </p>
                 </td>
-                <td className="text-neutral-600">{r.email}</td>
+                <td className="text-neutral-600">
+                  {r.email || (r.phone ? <span className="tabular-nums">{r.phone}</span> : <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700">no email</span>)}
+                  {r.email && r.phone && <p className="mt-0.5 text-xs tabular-nums text-neutral-400">{r.phone}</p>}
+                </td>
                 <td className="tabular-nums">{r.members.length}</td>
                 <td>
                   <div className="flex flex-wrap gap-1.5">
@@ -212,7 +223,8 @@ export function FamilyTable({
             {rows.length === 0 && (
               <tr>
                 <td colSpan={7} className="p-10 text-center text-sm text-neutral-400">
-                  No families yet — add the first one.
+                  No families yet — add the first one, or{" "}
+                  <a href={`/committee/import?wedding=${weddingId}`} className="portal-link">import a spreadsheet</a>.
                 </td>
               </tr>
             )}
