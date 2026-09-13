@@ -22,6 +22,20 @@ export function smtpTransport() {
 }
 
 /**
+ * Gmail pins the envelope address to the authenticated account, but the display
+ * name is ours to choose — so a wedding invite arrives from "Ananya & Arjun"
+ * rather than from the platform, which is what a guest expects to see in their
+ * inbox. Quotes and control characters are stripped: they would break the header.
+ */
+export function fromHeader(displayName?: string): string | undefined {
+  const configured = process.env.EMAIL_FROM;
+  const address = process.env.SMTP_USER;
+  if (!displayName || !address) return configured;
+  const safe = displayName.replace(/[\r\n"\\]/g, "").trim().slice(0, 78);
+  return safe ? `"${safe}" <${address}>` : configured;
+}
+
+/**
  * Where mail goes when nothing can send it: a database row (readable at
  * /admin/mailroom, works on Vercel's read-only filesystem) plus, best-effort,
  * the local outbox file that dev tooling and tests read.
@@ -42,9 +56,9 @@ export async function recordOutbox(m: {
   }
 }
 
-async function deliver(to: string, subject: string, html: string, rsvpUrl: string) {
+async function deliver(to: string, subject: string, html: string, rsvpUrl: string, from?: string) {
   if (smtpConfigured()) {
-    await smtpTransport().sendMail({ from: process.env.EMAIL_FROM, to, subject, html });
+    await smtpTransport().sendMail({ from, to, subject, html });
   } else {
     await recordOutbox({ to, subject, kind: "invite", link: rsvpUrl, html });
   }
@@ -54,7 +68,7 @@ export async function sendInvite(args: SendArgs): Promise<{ ok: boolean; error?:
   const subject = `${args.coupleNames} — you're invited! Please RSVP`;
   const html = await render(InviteEmail(args));
   try {
-    await deliver(args.to, subject, html, args.rsvpUrl);
+    await deliver(args.to, subject, html, args.rsvpUrl, fromHeader(args.coupleNames));
     await db.insert(emailLog).values({ familyId: args.familyId, type: args.type, status: "sent" });
     return { ok: true };
   } catch (e) {

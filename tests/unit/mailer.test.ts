@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import fs from "node:fs";
 import { db, migrateDb } from "@/db/client";
 import { weddings, families, emailLog } from "@/db/schema";
-import { sendInvite } from "@/lib/mailer";
+import { sendInvite, fromHeader } from "@/lib/mailer";
 
 describe("sendInvite (file mode)", () => {
   beforeAll(async () => {
@@ -33,5 +33,29 @@ describe("sendInvite (file mode)", () => {
     expect(last.html).toContain("Mehta Family");
     const logs = await db.select().from(emailLog);
     expect(logs.some((l) => l.familyId === f.id && l.status === "sent")).toBe(true);
+  });
+});
+
+describe("fromHeader", () => {
+  const prev = { from: process.env.EMAIL_FROM, user: process.env.SMTP_USER };
+  beforeAll(() => {
+    process.env.EMAIL_FROM = "Nimantran <hello@example.com>";
+    process.env.SMTP_USER = "hello@example.com";
+  });
+  afterAll(() => {
+    process.env.EMAIL_FROM = prev.from; process.env.SMTP_USER = prev.user;
+  });
+
+  it("puts the couple's names on the invite so guests recognise the sender", () => {
+    expect(fromHeader("Ananya & Arjun")).toBe('"Ananya & Arjun" <hello@example.com>');
+  });
+  it("falls back to the configured sender with no display name", () => {
+    expect(fromHeader()).toBe("Nimantran <hello@example.com>");
+  });
+  it("strips quotes and newlines that would break the header", () => {
+    expect(fromHeader('A"B\r\nBcc: evil@example.com')).toBe('"ABBcc: evil@example.com" <hello@example.com>');
+  });
+  it("falls back when the name is only strippable characters", () => {
+    expect(fromHeader('"""')).toBe("Nimantran <hello@example.com>");
   });
 });
