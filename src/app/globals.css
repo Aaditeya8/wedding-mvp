@@ -141,6 +141,15 @@ html.fx .reveal[data-fx="right"] { transform: translateX(30px); }
 html.fx .reveal[data-fx="scale"] { transform: scale(0.94); }
 html.fx .reveal.is-in { opacity: 1; transform: none; }
 
+/* The 30px side-slide is wider than the 24px page gutter, so on a narrow
+   screen a right-sliding block hangs 6px past the edge and the whole page
+   scrolls sideways. Below the gutter's comfort zone the horizontal reveals
+   fall back to the vertical one, which cannot overflow. */
+@media (max-width: 640px) {
+  html.fx .reveal[data-fx="left"],
+  html.fx .reveal[data-fx="right"] { transform: translateY(26px); }
+}
+
 /* SVG ornament draw-on: strokes carry pathLength="1" so one rule fits all.
    .draw-load runs on page load (hero); .draw waits for the observer. */
 .draw-load [pathLength], html.fx .draw [pathLength] {
@@ -323,4 +332,165 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
   .draw-load [pathLength] { animation: none; }
   html.fx .reveal, html.fx .rule-grow::before { opacity: 1; transform: none; transition: none; }
   html.fx .draw [pathLength], .draw-load [pathLength] { stroke-dasharray: none; stroke-dashoffset: 0; }
+}
+
+/* ============================================================
+   Marketing site — the product's own chrome.
+   Everything inside .device reads the theme contract, so the live
+   preview restyles exactly the way a real wedding site does.
+   ============================================================ */
+
+/* Sticky header: invisible until you leave the hero, then a hairline */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+}
+.nav[data-stuck="true"] {
+  /* Once content is sliding underneath, the bar carries most of its own
+     opacity rather than trusting backdrop-filter — which some browsers skip
+     entirely, and which washes out over a dark section. */
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  border-bottom-color: var(--hairline);
+  box-shadow: 0 10px 30px -26px rgba(0, 0, 0, 0.5);
+}
+.nav-link {
+  position: relative;
+  font-size: 0.8125rem;
+  color: var(--ink-soft);
+  transition: color 0.25s ease;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.35em;
+  width: 100%;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-link:hover { color: var(--ink); }
+.nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+
+/* Primary action, used in the header and at the closing band */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  background: var(--accent);
+  color: var(--surface);
+  padding: 0.85em 1.6em;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+}
+.cta:hover { transform: translateY(-2px); box-shadow: 0 14px 28px -16px var(--accent); }
+.cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  padding: 0.85em 1.6em;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: border-color 0.25s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.cta-ghost:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+/* ---- the live preview: a phone holding a real wedding site ---- */
+.device {
+  position: relative;
+  width: min(300px, 78vw);
+  aspect-ratio: 9 / 18.5;
+  border-radius: 2.4rem;
+  padding: 0.62rem;
+  background: linear-gradient(160deg, #2b2724, #4a443d 40%, #1d1a17);
+  box-shadow:
+    0 2px 3px rgba(255, 255, 255, 0.28) inset,
+    0 44px 70px -34px rgba(30, 25, 18, 0.62);
+}
+.device-screen {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 1.85rem;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  /* the whole screen cross-fades when the theme changes */
+  transition: background-color 0.65s ease, color 0.65s ease;
+}
+.device-notch {
+  position: absolute;
+  top: 0.55rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 34%;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  z-index: 3;
+}
+/* keying this on the live theme replays the entrance on every swap */
+.device-fade > * { animation: device-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.device-fade > *:nth-child(2) { animation-delay: 0.06s; }
+.device-fade > *:nth-child(3) { animation-delay: 0.12s; }
+.device-fade > *:nth-child(4) { animation-delay: 0.18s; }
+.device-fade > *:nth-child(5) { animation-delay: 0.24s; }
+@keyframes device-in {
+  from { opacity: 0; transform: translateY(10px); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+/* Theme rail: each chip previews its own palette and display face */
+.swatch {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--hairline);
+  border-radius: 0.6rem;
+  padding: 0.7rem 0.5rem 0.6rem;
+  line-height: 1.1;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+}
+.swatch:hover { transform: translateY(-3px); }
+.swatch[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ink); }
+
+/* ---- interactive RSVP demo (guest's half of the product) ---- */
+.demo-choice {
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 0.55em 1.35em;
+  font-size: 0.8125rem;
+  color: var(--ink);
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+.demo-choice[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+.demo-choice[aria-pressed="true"][data-kind="no"] { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+/* Ceremony chips — the vocabulary of an Indian wedding, at a glance */
+.rite {
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 0.45em 1em;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  color: var(--ink-soft);
+  transition: color 0.25s ease, border-color 0.25s ease;
+}
+.rite:hover { color: var(--ink); border-color: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  .device-fade > *,
+  .cta, .cta-ghost, .swatch, .nav-link::after { animation: none !important; transition: none !important; }
 }
