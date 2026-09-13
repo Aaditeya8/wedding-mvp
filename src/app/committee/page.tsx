@@ -12,7 +12,7 @@ export default async function CommitteePage({
 }: {
   searchParams: Promise<{ wedding?: string }>;
 }) {
-  const staff = await requireRole(["committee", "admin"]);
+  const staff = await requireRole(["committee", "couple", "admin"]);
   const requested = (await searchParams).wedding;
   let weddingId = staff.role === "admin" ? (requested ?? null) : staff.weddingId;
   if (staff.role === "admin" && !weddingId) {
@@ -43,6 +43,9 @@ export default async function CommitteePage({
     side: f.side,
     relation: f.relation,
     email: f.email,
+    phone: f.phone,
+    diet: f.diet,
+    source: f.source,
     members: allGuests.filter((g) => g.familyId === f.id)
       .map((g) => ({ fullName: g.fullName, ageGroup: g.ageGroup })),
     eventIds: allInvites.filter((i) => i.familyId === f.id).map((i) => i.eventId),

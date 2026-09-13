@@ -11,6 +11,9 @@ export type Row = {
   side: "bride" | "groom" | "both";
   relation: string | null;
   email: string;
+  phone?: string | null;
+  diet?: string | null;
+  source?: "committee" | "import" | "guest";
   members: { fullName: string; ageGroup: "adult" | "child" }[];
   eventIds: string[];
   rsvpByEvent: Record<string, { status: "attending" | "declined"; headcount: number; note: string | null }>;
@@ -142,10 +145,13 @@ export function FamilyTable({
                       {r.side}
                     </span>
                     {r.relation}
+                    {r.source === "guest" && <span className="ml-1 rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 font-medium text-violet-700">via link</span>}
+                    {r.diet && <span className="ml-1 rounded border border-neutral-200 px-1.5 py-0.5">{r.diet}</span>}
                   </p>
                 </td>
                 <td className="text-neutral-600">
-                  {r.email || <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700">no email</span>}
+                  {r.email || (r.phone ? <span className="tabular-nums">{r.phone}</span> : <span className="rounded border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700">no email</span>)}
+                  {r.email && r.phone && <p className="mt-0.5 text-xs tabular-nums text-neutral-400">{r.phone}</p>}
                 </td>
                 <td className="tabular-nums">{r.members.length}</td>
                 <td>

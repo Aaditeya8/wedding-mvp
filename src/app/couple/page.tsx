@@ -6,6 +6,9 @@ import { getRsvpSummary } from "@/lib/rsvp";
 import { SummaryCards } from "./SummaryCards";
 import { NonResponders } from "./NonResponders";
 import { ThemeSwitcher } from "./ThemeSwitcher";
+import { ShareCard } from "./ShareCard";
+import { fmtWeddingDate } from "@/lib/format";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -48,12 +51,22 @@ export default async function CouplePage({
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-10">
-      <header className="mb-8">
-        <h1 className="text-xl font-semibold">{coupleNames} — your wedding at a glance</h1>
-        <p className="mt-1 text-sm text-neutral-500">
-          Numbers update the moment a family answers.
-        </p>
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-semibold">{coupleNames} — your wedding at a glance</h1>
+          <p className="mt-1 text-sm text-neutral-500">
+            Numbers update the moment a family answers.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link href={staff.role === "admin" ? `/couple/site?wedding=${weddingId}` : "/couple/site"} className="portal-button">Edit your site</Link>
+          <Link href={staff.role === "admin" ? `/committee?wedding=${weddingId}` : "/committee"} className="portal-button-secondary">Guest list &amp; invites</Link>
+        </div>
       </header>
+
+      <div className="mb-6">
+        <ShareCard slug={wedding.slug} coupleNames={coupleNames} weddingDateText={fmtWeddingDate(wedding.weddingDate)} />
+      </div>
 
       {/* headline stats */}
       <div className="mb-6 grid grid-cols-2 gap-3 md:max-w-md">
@@ -91,7 +104,7 @@ export default async function CouplePage({
         <section className="rounded-xl border border-neutral-200 bg-white p-6">
           <h2 className="font-semibold">Guest list</h2>
           <p className="mt-1 text-sm text-neutral-500">
-            Managed by your committee — ask them for changes.
+            Add families, import a spreadsheet or send invites in the <Link href="/committee" className="underline">guest list</Link>.
           </p>
           <div className="mt-4 space-y-5">
             {(["bride", "groom", "both"] as const).map((side) => {

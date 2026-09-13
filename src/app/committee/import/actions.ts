@@ -35,7 +35,7 @@ function applyMatches(rows: ImportRow[], existing: ExistingFamily[]): number {
 
 /* Same rule as the rest of /committee: admin names a wedding, committee is pinned to its own. */
 async function scopedWeddingId(requested: string): Promise<string | null> {
-  const staff = await requireRole(["committee", "admin"]);
+  const staff = await requireRole(["committee", "couple", "admin"]);
   if (staff.role === "admin") return requested;
   return staff.weddingId;
 }

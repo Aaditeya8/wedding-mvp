@@ -5,8 +5,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { users, accounts, sessions, verificationTokens } from "@/db/schema";
 import { isProvisionedStaff } from "@/lib/authz";
-import fs from "node:fs";
-import path from "node:path";
+import { recordOutbox, smtpConfigured } from "@/lib/mailer";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
@@ -17,13 +16,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Nodemailer({
       server: { service: "gmail", auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } },
       from: process.env.EMAIL_FROM,
-      // file mode: write the magic link to the outbox instead of sending
-      ...(process.env.EMAIL_MODE !== "smtp" && {
+      // no SMTP: record the magic link in the outbox instead of sending
+      ...(!smtpConfigured() && {
         sendVerificationRequest: async ({ identifier, url }) => {
-          const dir = path.join(process.cwd(), "var/outbox");
-          fs.mkdirSync(dir, { recursive: true });
-          fs.appendFileSync(path.join(dir, "mail.jsonl"),
-            JSON.stringify({ to: identifier, subject: "Sign in", signInUrl: url, at: new Date().toISOString() }) + "\n");
+          await recordOutbox({ to: identifier, subject: "Sign in", kind: "signin", link: url });
         },
       }),
     }),

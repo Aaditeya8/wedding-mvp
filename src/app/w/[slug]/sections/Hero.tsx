@@ -9,6 +9,9 @@ type HeroWedding = {
   theme: string;
   weddingDate: Date;
   heroTagline: string | null;
+  brideParents?: string | null;
+  groomParents?: string | null;
+  hashtag?: string | null;
 };
 
 /* Letter-by-letter reveal; --i continues across both names so the cascade
@@ -39,7 +42,16 @@ export function Hero({ wedding, city }: { wedding: HeroWedding; city?: string })
         &amp;
       </span>
 
-      <p className="kicker rise rise-1">The wedding of</p>
+      {(wedding.brideParents || wedding.groomParents) ? (
+        <p className="kicker rise rise-1 max-w-xl leading-loose" style={{ letterSpacing: "0.18em" }}>
+          With the blessings of
+          {wedding.brideParents && <><br />{wedding.brideParents}</>}
+          {wedding.brideParents && wedding.groomParents && <><br /><span aria-hidden>&amp;</span></>}
+          {wedding.groomParents && <><br />{wedding.groomParents}</>}
+        </p>
+      ) : (
+        <p className="kicker rise rise-1">The wedding of</p>
+      )}
 
       <h1
         className="font-display mt-6 tracking-tight"
@@ -72,6 +84,9 @@ export function Hero({ wedding, city }: { wedding: HeroWedding; city?: string })
       <p className="kicker rise rise-4 mt-10">
         {fmtWeddingDate(wedding.weddingDate)}{city ? ` · ${city}` : ""}
       </p>
+      {wedding.hashtag && (
+        <p className="rise rise-4 mt-3 text-sm" style={{ color: "var(--ink-soft)" }}>#{wedding.hashtag}</p>
+      )}
 
       <div className="rise rise-4 mt-8">
         <Countdown date={wedding.weddingDate} />

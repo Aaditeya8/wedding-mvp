@@ -9,12 +9,13 @@ type EventRow = {
   address: string;
   mapUrl: string | null;
   dressCode: string | null;
+  description?: string | null;
 };
 
-export function EventTimeline({ theme: _theme, events }: { theme: string; events: EventRow[] }) {
+export function EventTimeline({ theme: _theme, events, no = "02" }: { theme: string; events: EventRow[]; no?: string }) {
   return (
     <section className="mx-auto max-w-5xl px-6 py-24 md:py-32">
-      <SectionHeader no="02" title="The Celebrations" />
+      <SectionHeader no={no} title="The Celebrations" />
       <ol>
         {events.map((e, i) => (
           <li
@@ -34,6 +35,11 @@ export function EventTimeline({ theme: _theme, events }: { theme: string; events
               <p className="kicker mt-4">
                 {fmtEventDate(e.startsAt)} · {fmtEventTime(e.startsAt)}
               </p>
+              {e.description && (
+                <p className="mt-4 max-w-md text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>
+                  {e.description}
+                </p>
+              )}
             </div>
             <div className="md:col-span-5 md:pt-2">
               <p className="text-base font-medium">{e.venueName}</p>

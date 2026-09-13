@@ -13,7 +13,7 @@ export default async function ImportPage({
 }: {
   searchParams: Promise<{ wedding?: string; mode?: string }>;
 }) {
-  const staff = await requireRole(["committee", "admin"]);
+  const staff = await requireRole(["committee", "couple", "admin"]);
   const params = await searchParams;
   let weddingId = staff.role === "admin" ? (params.wedding ?? null) : staff.weddingId;
   if (staff.role === "admin" && !weddingId) {

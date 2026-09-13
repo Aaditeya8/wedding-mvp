@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, text, integer, timestamp, uuid, primaryKey, uniqueIndex } from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, text, integer, boolean, jsonb, timestamp, uuid, primaryKey, uniqueIndex } from "drizzle-orm/pg-core";
 
 export const themeEnum = pgEnum("theme", ["ivory-editorial", "raj-mahal", "gulaab-rococo", "mehfil-noor", "pichwai-bagh", "neel-chhapa"]);
 export const sideEnum = pgEnum("side", ["bride", "groom", "both"]);
@@ -6,6 +6,13 @@ export const roleEnum = pgEnum("role", ["admin", "couple", "committee"]);
 export const rsvpStatusEnum = pgEnum("rsvp_status", ["attending", "declined"]);
 export const ageGroupEnum = pgEnum("age_group", ["adult", "child"]);
 export const emailTypeEnum = pgEnum("email_type", ["invite", "reminder", "resend"]);
+export const familySourceEnum = pgEnum("family_source", ["committee", "import", "guest"]);
+
+/** Travel & stay copy the couple writes in their editor — prose, not relational data. */
+export type TravelInfo = {
+  stays: { name: string; note: string; url?: string }[];
+  gettingThere: string;
+};
 
 export const weddings = pgTable("weddings", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -16,6 +23,14 @@ export const weddings = pgTable("weddings", {
   weddingDate: timestamp("wedding_date", { withTimezone: true }).notNull(),
   heroTagline: text("hero_tagline"),
   story: text("story"),
+  city: text("city"),
+  brideParents: text("bride_parents"),
+  groomParents: text("groom_parents"),
+  hashtag: text("hashtag"),
+  contactPhone: text("contact_phone"),
+  rsvpOpen: boolean("rsvp_open").notNull().default(true),
+  rsvpDeadline: timestamp("rsvp_deadline", { withTimezone: true }),
+  travel: jsonb("travel").$type<TravelInfo>(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -28,6 +43,8 @@ export const events = pgTable("events", {
   address: text("address").notNull(),
   mapUrl: text("map_url"),
   dressCode: text("dress_code"),
+  description: text("description"),
+  isPublished: boolean("is_published").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
 });
 
@@ -38,6 +55,9 @@ export const families = pgTable("families", {
   side: sideEnum("side").notNull(),
   relation: text("relation"),
   email: text("email").notNull(),
+  phone: text("phone"),
+  diet: text("diet"),
+  source: familySourceEnum("source").notNull().default("committee"),
   inviteTokenHash: text("invite_token_hash"),
   tokenExpiresAt: timestamp("token_expires_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
@@ -99,4 +119,15 @@ export const emailLog = pgTable("email_log", {
   type: emailTypeEnum("type").notNull(),
   sentAt: timestamp("sent_at", { withTimezone: true }).defaultNow().notNull(),
   status: text("status").notNull(), // "sent" | "failed: <message>"
+});
+
+/** Mail that would have been sent, when no SMTP transport is configured. Replaces the
+    local outbox file in production, where the filesystem is read-only. */
+export const outbox = pgTable("outbox", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  to: text("to").notNull(),
+  subject: text("subject").notNull(),
+  kind: text("kind").notNull(), // "signin" | "invite"
+  link: text("link"),
+  at: timestamp("at", { withTimezone: true }).defaultNow().notNull(),
 });

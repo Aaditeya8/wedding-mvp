@@ -44,3 +44,7 @@ var/
 # playwright
 /test-results/
 /playwright-report/
+.env*.local
+
+# playwright-mcp scratch
+/.playwright-mcp/
