@@ -1,12 +1,12 @@
 import QRCode from "qrcode";
 import { CopyButton } from "./CopyButton";
+import { appOrigin } from "@/lib/origin";
 
 /** The one thing a couple actually needs from the dashboard: the link. */
 export async function ShareCard({ slug, coupleNames, weddingDateText, compact = false }: {
   slug: string; coupleNames: string; weddingDateText: string; compact?: boolean;
 }) {
-  const appUrl = process.env.APP_URL ?? "http://localhost:3000";
-  const url = `${appUrl}/w/${slug}`;
+  const url = `${await appOrigin()}/w/${slug}`;
   const message = `${coupleNames} are getting married on ${weddingDateText} — and you're invited! 🎉\n\nSee the celebrations and RSVP here: ${url}`;
   const wa = `https://wa.me/?text=${encodeURIComponent(message)}`;
   const qr = await QRCode.toString(url, { type: "svg", margin: 1, color: { dark: "#1c1917", light: "#ffffff00" } });

@@ -41,7 +41,7 @@ export function OpenRsvpForm({ slug, events }: { slug: string; events: EventProp
           headcount: statuses[e.id] === "attending" ? heads[e.id] : 0,
         })),
       });
-      if (res.ok) setDone({ editUrl: res.editUrl, attending: res.attending });
+      if (res.ok) setDone({ editUrl: res.editPath ? new URL(res.editPath, window.location.origin).toString() : "", attending: res.attending });
       else setError(res.error);
     });
   }

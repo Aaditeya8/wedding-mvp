@@ -54,11 +54,11 @@ describe("submitOpenRsvp", () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.attending).toEqual(["Sangeet"]);
-    expect(r.editUrl).toMatch(/\/rsvp\/[A-Za-z0-9_-]{20,}/);
+    expect(r.editPath).toMatch(/^\/rsvp\/[A-Za-z0-9_-]{20,}$/);
     const [fam] = await db.select().from(families).where(eq(families.weddingId, weddingId));
     expect(fam).toMatchObject({ name: "The Raos", source: "guest", phone: "9876543210", diet: "veg", email: "" });
     expect((await db.select().from(guests).where(eq(guests.familyId, fam.id))).length).toBe(2);
-    const viaToken = await getFamilyByToken(r.editUrl.split("/rsvp/")[1]);
+    const viaToken = await getFamilyByToken(r.editPath.split("/rsvp/")[1]);
     expect(viaToken?.events.map((e) => e.name).sort()).toEqual(["Pheras", "Sangeet"]);
   });
   it("a returning guest (same phone, different formatting) updates instead of duplicating", async () => {

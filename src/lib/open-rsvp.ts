@@ -44,7 +44,9 @@ const schema = z.object({
 
 export type OpenRsvpInput = z.input<typeof schema>;
 export type OpenRsvpResult =
-  | { ok: true; editUrl: string; familyName: string; attending: string[] }
+  /** `editPath` is origin-relative on purpose: the guest is already on the right
+      host, so the link they are handed never depends on APP_URL being correct. */
+  | { ok: true; editPath: string; familyName: string; attending: string[] }
   | { ok: false; error: string };
 
 /**
@@ -117,17 +119,17 @@ export async function submitOpenRsvp(input: unknown, clientKey = "local"): Promi
   }
 
   // an edit link: only mint a fresh token when it won't invalidate an emailed one
-  let editUrl = "";
+  let editPath = "";
   if (family.source === "guest" || !family.inviteTokenHash) {
     const { token, tokenHash } = generateInviteToken();
     await db.update(families).set({ inviteTokenHash: tokenHash, tokenExpiresAt: tokenExpiry(wedding.weddingDate) })
       .where(eq(families.id, family.id));
-    editUrl = `${process.env.APP_URL ?? "http://localhost:3000"}/rsvp/${token}`;
+    editPath = `/rsvp/${token}`;
   }
 
   const attendingIds = d.responses.filter((r) => r.status === "attending").map((r) => r.eventId);
   const attending = attendingIds.length
     ? (await db.select({ name: events.name }).from(events).where(inArray(events.id, attendingIds)).orderBy(events.sortOrder)).map((e) => e.name)
     : [];
-  return { ok: true, editUrl, familyName: family.name, attending };
+  return { ok: true, editPath, familyName: family.name, attending };
 }
