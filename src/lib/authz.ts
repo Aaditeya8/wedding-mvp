@@ -5,8 +5,9 @@ import { users } from "@/db/schema";
 
 export type Role = "admin" | "couple" | "committee";
 
-// Where each role lands when they open a door that isn't theirs
-const ROLE_HOME: Record<Role, string> = {
+// Where each role lands: when they open a door that isn't theirs, and where
+// /go sends them after a magic link (which cannot know their role in advance).
+export const ROLE_HOME: Record<Role, string> = {
   admin: "/admin",
   couple: "/couple",
   committee: "/committee",

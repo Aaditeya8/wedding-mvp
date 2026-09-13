@@ -1,20 +1,29 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "@/auth";
+import { auth, signIn } from "@/auth";
+import { ROLE_HOME, type Role } from "@/lib/authz";
 import { BRAND } from "@/lib/brand";
 
 export default async function SignInPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sent?: string }>;
+  searchParams: Promise<{ sent?: string; error?: string }>;
 }) {
-  const { sent } = await searchParams;
+  const { sent, error } = await searchParams;
+
+  // Already signed in — including someone re-opening a link they already used.
+  // Showing them the form is what made this feel like a loop.
+  const session = await auth();
+  const role = (session?.user as { role?: Role } | undefined)?.role;
+  if (role) redirect(ROLE_HOME[role]);
 
   async function requestLink(formData: FormData) {
     "use server";
     const email = String(formData.get("email") ?? "").trim();
     try {
-      await signIn("nodemailer", { email, redirect: false });
+      // /go reads the new session and forwards to the right dashboard. Without
+      // this the link's callbackUrl defaults to /signin — straight back here.
+      await signIn("nodemailer", { email, redirect: false, redirectTo: "/go" });
     } catch (err) {
       // The UI stays deliberately vague — revealing which addresses are provisioned
       // would turn this form into an account-enumeration oracle. The server log is
@@ -30,6 +39,12 @@ export default async function SignInPage({
         <p className="portal-eyebrow">{BRAND}</p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight">Sign in</h1>
         <p className="mt-2 text-sm leading-relaxed text-neutral-500">Couples, planners and family — use the email your wedding is set up with. We&apos;ll send a single-use link, no password.</p>
+        {error && !sent ? (
+          <p className="mt-6 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950" role="alert">
+            That link has already been used, or it expired. Sign-in links work once —
+            enter your email and we&apos;ll send a fresh one.
+          </p>
+        ) : null}
         {sent ? (
           <p className="mt-6 rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-950">
             If that address is on the team, a sign-in link is on its way. Check your email.

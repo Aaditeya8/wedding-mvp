@@ -35,5 +35,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-  pages: { signIn: "/signin" },
+  // Verification failures (a link already used, or expired) come back to our own
+  // sign-in page as ?error=, not Auth.js's unstyled 403 dead end.
+  pages: { signIn: "/signin", error: "/signin" },
 });
