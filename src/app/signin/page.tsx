@@ -15,8 +15,11 @@ export default async function SignInPage({
     const email = String(formData.get("email") ?? "").trim();
     try {
       await signIn("nodemailer", { email, redirect: false });
-    } catch {
-      // Swallow AccessDenied etc. — never reveal which emails are provisioned
+    } catch (err) {
+      // The UI stays deliberately vague — revealing which addresses are provisioned
+      // would turn this form into an account-enumeration oracle. The server log is
+      // not vague, so a genuine mail outage is still diagnosable.
+      console.error("[signin] sign-in mail failed:", err instanceof Error ? err.message : err);
     }
     redirect("/signin?sent=1");
   }

@@ -18,10 +18,19 @@ export async function startWedding(_prev: StartState, formData: FormData): Promi
   }
   const res = await createWeddingForCouple(values);
   if (!res.ok) return { error: "Please check the details — every field is needed, and the date should be in the future.", values };
+  // If the mail can't go out, say so. The couple has just handed us their wedding;
+  // telling them to check an inbox nothing was sent to is the worst possible lie,
+  // because they have no way to tell it from a slow inbox. (`redirect: false` keeps
+  // signIn from throwing a redirect, so anything caught here is a real failure.)
+  let mailed = true;
   try {
     await signIn("nodemailer", { email: res.email, redirect: false, redirectTo: "/couple/site" });
-  } catch {
-    // never reveal provisioning state; the magic link goes out (or to the outbox) either way
+  } catch (e) {
+    mailed = false;
+    console.error("[start] sign-in mail failed for a new wedding:", e instanceof Error ? e.message : e);
   }
-  redirect(`/start/sent?e=${encodeURIComponent(res.email)}${res.created ? "" : "&existing=1"}`);
+  const q = new URLSearchParams({ e: res.email });
+  if (!res.created) q.set("existing", "1");
+  if (!mailed) q.set("mail", "failed");
+  redirect(`/start/sent?${q}`);
 }
