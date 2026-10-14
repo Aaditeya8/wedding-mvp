@@ -137,8 +137,7 @@ export function LivePreview() {
       </div>
 
       <div>
-        <p className="kicker">Six looks, one click</p>
-        <h2 className="font-display mt-4 text-4xl tracking-tight md:text-5xl">
+        <h2 className="font-display h2">
           Try it on. The whole invitation changes.
         </h2>
         <p className="mt-5 max-w-md text-sm leading-relaxed" style={{ color: "var(--ink-soft)" }}>

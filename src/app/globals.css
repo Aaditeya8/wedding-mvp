@@ -614,3 +614,304 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
 @media (prefers-reduced-motion: reduce) {
   .device-tilt { transform: none !important; transition: none !important; }
 }
+
+/* ============================================================
+   Marketing page, second pass: the page wears the product.
+   #sweep carries data-theme; ThemeSweep swaps it per section.
+   ============================================================ */
+
+.sweep { transition: background-color 0.9s ease, color 0.9s ease; }
+#sweep :where(p, h1, h2, h3, li, b) { transition: color 0.9s ease; }
+#sweep :where(.rite, .week-rite, .roadmap-item, .cta-ghost, .demo-choice, .swatch, .card-mount) {
+  transition: border-color 0.9s ease, color 0.9s ease, background-color 0.9s ease;
+}
+
+.wrap { margin-inline: auto; max-width: 72rem; padding-inline: 1.5rem; }
+.sec { padding-block: clamp(5rem, 10vw, 8.5rem); }
+.sec + .sec { border-top: 1px solid var(--hairline); }
+.h2 {
+  font-size: clamp(2.2rem, 4.6vw, 3.6rem);
+  line-height: 1.02;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.lede {
+  margin-top: 1.25rem;
+  max-width: 34rem;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+/* ---- the indicator: which look the page is wearing right now ---- */
+.sweep-pill {
+  position: fixed;
+  left: 1rem;
+  bottom: 1rem;
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 0.8rem 0.5rem 0.6rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--ink-soft);
+  font-size: 0.72rem;
+  transition: background-color 0.9s ease, color 0.9s ease, border-color 0.9s ease;
+}
+.sweep-pill b { color: var(--ink); font-weight: 600; }
+.sweep-dots { display: inline-flex; gap: 4px; }
+.sweep-dot {
+  width: 10px; height: 10px; border-radius: 999px;
+  border: 1px solid; opacity: 0.45;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s;
+}
+.sweep-dot[data-on="true"] { opacity: 1; transform: scale(1.35); }
+@media (max-width: 640px) {
+  .sweep-label { display: none; }
+  .sweep-pill { padding: 0.5rem 0.6rem; }
+}
+
+/* ---- hero ---- */
+.hero {
+  position: relative;
+  overflow: hidden;
+  min-height: calc(100svh - 4rem);
+  display: flex;
+  align-items: center;
+  padding-block: 3rem 4rem;
+}
+.hero::before {
+  /* a single soft light behind the ring, in the look's own accent */
+  content: "";
+  position: absolute;
+  right: -10%;
+  top: 10%;
+  width: 60vw;
+  height: 60vw;
+  max-width: 820px;
+  max-height: 820px;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 22%, transparent), transparent 62%);
+  pointer-events: none;
+  transition: background 0.9s ease;
+}
+.hero-grid {
+  position: relative;
+  margin-inline: auto;
+  max-width: 76rem;
+  padding-inline: 1.5rem;
+  display: grid;
+  gap: 3rem;
+  align-items: center;
+  width: 100%;
+}
+@media (min-width: 900px) {
+  .hero-grid { grid-template-columns: 5fr 7fr; gap: 2rem; }
+}
+.hero-h1 {
+  font-size: clamp(2.5rem, 7vw, 6rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+}
+.hero-sub {
+  margin-top: 1.75rem;
+  max-width: 30rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.hero-ctas { margin-top: 2.25rem; display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.hero-note { margin-top: 1.25rem; font-size: 0.8rem; color: var(--ink-soft); }
+.hero-copy { animation: rise 1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.hero-ring { animation: rise 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both; }
+
+/* ---- the ring of invitations ---- */
+.wheel-stage {
+  --cw: 230px;        /* card width */
+  --r: 300px;         /* ring radius */
+  position: relative;
+  width: 100%;
+  height: 480px;
+  perspective: 1500px;
+  perspective-origin: 50% 42%;
+}
+@media (max-width: 640px) {
+  .wheel-stage { --cw: 156px; --r: 200px; height: 340px; perspective: 1000px; }
+}
+.wheel-tilt {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(-5deg + var(--ty, 0deg))) rotateY(var(--tx, 0deg));
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wheel {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.wheel-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--cw);
+  aspect-ratio: 3 / 4.2;
+  margin-left: calc(var(--cw) / -2);
+  margin-top: calc(var(--cw) * -0.7);
+  transform: rotateY(var(--a)) translateZ(var(--r));
+  transform-style: preserve-3d;
+  background: transparent;
+}
+.wheel .card3d { width: 100%; }
+/* Seen from behind, a card shows a plain back, not its mirrored page: the
+   page's back face is hidden and a back plate faces the other way. */
+.wheel .card3d-inner { backface-visibility: hidden; }
+/* cover and page sit on the same plane; lift the cover a hair so the page
+   never z-fights through it on a card seen edge-on */
+.wheel .card3d-cover { transform: translateZ(1px); }
+.wheel .card3d[data-open="true"] .card3d-cover { transform: translateZ(1px) rotateY(-158deg); }
+.wheel-item::before {
+  content: "&";
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 3px;
+  border: 1px solid var(--hairline);
+  background:
+    radial-gradient(var(--hairline) 1px, transparent 1.5px) 0 0 / 20px 20px,
+    var(--surface);
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 2.4rem;
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+}
+.wheel .card3d-inner { padding: 1.2rem 0.9rem; }
+.wheel .card3d-cover { box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.7), 2px 0 18px -8px rgba(0, 0, 0, 0.45); }
+.wheel .card3d-inner { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent), 0 30px 60px -30px rgba(0, 0, 0, 0.7); }
+.wheel-caption { margin-top: 1.25rem; font-size: 0.85rem; color: var(--ink-soft); }
+.wheel-caption b { color: var(--ink); font-weight: 600; }
+
+/* ---- the guest-list board (the real workspace chrome, in a themed room) ---- */
+.board { color: #272624; text-align: left; }
+.board-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.25rem 1rem; }
+.board-title { margin-top: 0.3rem; font-size: 1.05rem; font-weight: 650; letter-spacing: -0.02em; }
+.board-stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #ece9e3; border-bottom: 1px solid #ece9e3; }
+.board-stat { display: flex; flex-direction: column; gap: 0.4rem; padding: 1rem 1.25rem; }
+.board-stat + .board-stat { border-left: 1px solid #ece9e3; }
+.board-stat-value { font-size: 1.6rem; font-weight: 650; letter-spacing: -0.04em; line-height: 1; transition: color 0.3s; }
+.board-status { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: #8a847b; }
+.board-status::before { content: ""; width: 7px; height: 7px; border-radius: 999px; background: #d6d1c8; }
+.board-status[data-ok="true"] { color: #2f6b3a; }
+.board-status[data-ok="true"]::before { background: #3f9a52; }
+.board tbody tr[data-flash="true"] { background: #fff6e3; }
+.board tbody tr { transition: background-color 0.9s ease; }
+@media (max-width: 640px) {
+  .board-stats { grid-template-columns: repeat(2, 1fr); }
+  .board-stat:nth-child(3) { border-left: 0; }
+  .board-stat:nth-child(n + 3) { border-top: 1px solid #ece9e3; }
+  .board .portal-table th:nth-child(2), .board .portal-table td:nth-child(2),
+  .board .portal-table th:nth-child(4), .board .portal-table td:nth-child(4) { display: none; }
+}
+.live-grid {
+  margin-top: 3.5rem;
+  display: grid;
+  gap: 2.5rem 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+/* ---- the week ---- */
+.week {
+  margin-top: 3.5rem;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border-top: 1px solid var(--hairline);
+}
+.week-day { padding: 1.25rem 1rem 1.5rem 0; border-right: 1px solid var(--hairline); }
+.week-day:last-child { border-right: 0; }
+.week-day + .week-day { padding-left: 1rem; }
+.week-label { display: block; font-size: 0.75rem; color: var(--ink-soft); }
+.week-rites { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.9rem; }
+.week-rite { display: flex; flex-direction: column; gap: 0.15rem; }
+.week-rite .font-display { font-size: 1.35rem; line-height: 1.1; letter-spacing: -0.01em; }
+.week-dress { font-size: 0.72rem; color: var(--ink-soft); }
+@media (max-width: 900px) {
+  .week { grid-template-columns: repeat(3, 1fr); }
+  .week-day:nth-child(3n) { border-right: 0; }
+  .week-day:nth-child(n + 4) { border-top: 1px solid var(--hairline); }
+  .week-day:nth-child(3n + 1) { padding-left: 0; }
+}
+@media (max-width: 520px) {
+  .week { grid-template-columns: repeat(2, 1fr); }
+  .week-day:nth-child(3n) { border-right: 1px solid var(--hairline); }
+  .week-day:nth-child(2n) { border-right: 0; }
+  .week-day:nth-child(n + 3) { border-top: 1px solid var(--hairline); }
+  .week-day:nth-child(3n + 1) { padding-left: 1rem; }
+  .week-day:nth-child(2n + 1) { padding-left: 0; }
+}
+
+/* ---- roadmap: three columns by month ---- */
+.roadmap {
+  margin-top: 3.5rem;
+  display: grid;
+  gap: 2.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+}
+.roadmap-when {
+  font-size: 1.9rem;
+  letter-spacing: -0.01em;
+  padding-bottom: 0.9rem;
+  border-bottom: 1px solid var(--ink);
+}
+.roadmap-item { padding: 1.1rem 0; border-bottom: 1px solid var(--hairline); }
+
+/* ---- closing band, in the current look's band colours ---- */
+.band {
+  padding: clamp(5rem, 10vw, 8rem) 1.5rem;
+  text-align: center;
+  background: var(--band-bg);
+  color: var(--band-ink);
+  transition: background-color 0.9s ease, color 0.9s ease;
+}
+.band-h2 { margin-inline: auto; max-width: 42rem; font-size: clamp(2.4rem, 5.5vw, 4.5rem); line-height: 1; letter-spacing: -0.02em; text-wrap: balance; }
+.band-cta {
+  display: inline-block;
+  margin-top: 2.5rem;
+  padding: 1rem 2.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: var(--band-ink);
+  color: var(--band-bg);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.band-cta:hover { transform: translateY(-2px); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-copy, .hero-ring { animation: none; }
+  .wheel-tilt { transition: none; transform: none; }
+  .sweep, #sweep :where(p, h1, h2, h3, li, b), .sweep-pill, .band { transition: none; }
+}
+
+/* ============================================================
+   Web-to-print: a couple's site prints as the invitation.
+   Chrome, motion and the RSVP band drop out; the card keeps its colours.
+   ============================================================ */
+@media print {
+  @page { size: A5 portrait; margin: 12mm; }
+  html, body { background: #fff !important; }
+  .themed { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .petal, .marquee, .scroll-cue, .nav, .sweep-pill, [data-print="hide"] { display: none !important; }
+  .rise, .reveal, .ltr, .parallax { animation: none !important; opacity: 1 !important; transform: none !important; }
+  html.fx .reveal, html.fx .rule-grow::before { opacity: 1 !important; transform: none !important; }
+  .draw [pathLength], .draw-load [pathLength] { stroke-dasharray: none !important; stroke-dashoffset: 0 !important; }
+  section { break-inside: avoid; }
+  a[href]::after { content: none !important; }
+}

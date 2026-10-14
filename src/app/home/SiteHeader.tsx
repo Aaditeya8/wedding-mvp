@@ -5,9 +5,10 @@ import { useEffect, useRef, useState } from "react";
 import { BRAND } from "@/lib/brand";
 
 const LINKS = [
-  { href: "#preview", label: "See it live" },
+  { href: "#looks", label: "Six looks" },
   { href: "#guests", label: "For guests" },
-  { href: "#ceremonies", label: "Ceremonies" },
+  { href: "#list", label: "Guest list" },
+  { href: "#roadmap", label: "Roadmap" },
 ];
 
 export function SiteHeader() {
