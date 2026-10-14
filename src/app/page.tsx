@@ -7,6 +7,7 @@ import { CardRing } from "./home/CardRing";
 import { LivePreview } from "./home/LivePreview";
 import { RsvpDemo } from "./home/RsvpDemo";
 import { OpsBoard } from "./home/OpsBoard";
+import { Mark } from "@/themes/mark";
 
 export const metadata = {
   title: `${BRAND} — the Indian wedding, run from one link`,
@@ -208,8 +209,9 @@ export default function Home() {
       </main>
 
       <footer className="px-6 py-12 text-center">
-        <p className="font-display text-2xl tracking-tight">
-          {BRAND}<span aria-hidden className="foil italic"> &amp;</span>
+        <p className="font-display inline-flex items-center gap-2 text-2xl tracking-tight">
+          <Mark size={26} style={{ color: "var(--accent)" }} />
+          {BRAND}
         </p>
         <p className="mt-2 text-sm" style={{ color: "var(--ink-soft)" }}>{BRAND_TAGLINE}</p>
         <nav aria-label="Footer" className="mt-6 flex flex-wrap items-center justify-center gap-6">

@@ -59,7 +59,7 @@ export function OpsBoard() {
     <div ref={ref} className="portal-panel board">
       <div className="board-head">
         <div>
-          <p className="portal-eyebrow">Ananya &amp; Arjun · Guest list</p>
+          <p className="portal-eyebrow">Ananya weds Arjun · Guest list</p>
           <p className="board-title">{rows.length} families · {pending ? `${pending} still to answer` : "everyone has answered"}</p>
         </div>
         <span className="portal-badge">{pending ? "Replies arriving" : "Up to date"}</span>

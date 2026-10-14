@@ -228,7 +228,18 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
   margin: -0.15em -0.2em;
 }
 
-/* Hero ampersand: run the letter-cascade entrance AND the shimmer —
+/* "weds": the word between the names, set small and italic in the display
+   face so the names carry the size and the word carries the meaning */
+.weds {
+  display: inline-block;
+  font-style: italic;
+  font-size: 0.42em;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  vertical-align: 0.1em;
+}
+
+/* Hero joiner: run the letter-cascade entrance AND the shimmer —
    each class alone would override the other's animation shorthand */
 .foil.ltr {
   animation:
@@ -774,22 +785,21 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
 /* cover and page sit on the same plane; lift the cover a hair so the page
    never z-fights through it on a card seen edge-on */
 .wheel .card3d-cover { transform: translateZ(1px); }
+/* the cover's children are their own planes (preserve-3d) and ignore the
+   cover's hidden backface — hide theirs too, or a rear card shows mirrored text */
+.wheel .card3d-cover > *, .wheel .card3d-inner > * { backface-visibility: hidden; }
+.wheel-item[data-back="true"] .card3d { visibility: hidden; }
 .wheel .card3d[data-open="true"] .card3d-cover { transform: translateZ(1px) rotateY(-158deg); }
 .wheel-item::before {
-  content: "&";
+  content: "";
   position: absolute;
   inset: 0;
-  display: grid;
-  place-items: center;
   border-radius: 3px;
   border: 1px solid var(--hairline);
   background:
+    radial-gradient(circle at 50% 50%, transparent 15px, var(--accent) 16px, var(--accent) 17px, transparent 18px),
     radial-gradient(var(--hairline) 1px, transparent 1.5px) 0 0 / 20px 20px,
     var(--surface);
-  color: var(--accent);
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 2.4rem;
   transform: rotateY(180deg);
   backface-visibility: hidden;
 }

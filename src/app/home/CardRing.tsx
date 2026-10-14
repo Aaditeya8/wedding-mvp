@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { THEMES, THEME_META, type Theme } from "@/themes/catalog";
 import { Ornament } from "@/themes/ornaments";
+import { Mark } from "@/themes/mark";
 
 /* Six weddings on a slowly turning ring, each card dressed in one of the six
    looks and reading its own tokens, so what turns past you is the product
@@ -65,6 +66,8 @@ export function CardRing() {
         const c = Math.cos((a * Math.PI) / 180); // 1 = facing you, -1 = facing away
         it.style.opacity = String(0.12 + 0.88 * ((c + 1) / 2) ** 1.6);
         it.style.pointerEvents = c < 0.1 ? "none" : "";
+        // facing away: show only the back plate, never a mirrored page
+        it.dataset.back = c < 0 ? "true" : "false";
         if (c > bestC) { bestC = c; best = i; }
       });
       if (best !== frontNow) { frontNow = best; setFront(best); }
@@ -146,8 +149,10 @@ export function CardRing() {
                   <div className="card3d" data-open={isOpen}>
                     <div className="card3d-inner">
                       <p className="text-[0.5rem] tracking-[0.3em] uppercase" style={{ color: "var(--ink-soft)" }}>Together with their families</p>
-                      <h3 className="font-display mt-2 leading-[0.95] tracking-tight" style={{ fontSize: "2rem" }}>
-                        {c.names[0]}<br /><em className="foil italic">&amp;</em> {c.names[1]}
+                      <h3 className="font-display mt-2 leading-[0.95] tracking-tight" style={{ fontSize: "1.9rem" }}>
+                        {c.names[0]}<br />
+                        <em className="foil weds">weds</em><br />
+                        {c.names[1]}
                       </h3>
                       <div className="mt-2 scale-[0.6]"><Ornament theme={theme} slot="hero" /></div>
                       <p className="text-[0.5rem] tracking-[0.2em] uppercase" style={{ color: "var(--ink-soft)" }}>{c.when} · {c.city}</p>
@@ -177,10 +182,11 @@ export function CardRing() {
                       }
                     >
                       <span className="text-[0.5rem] tracking-[0.3em] uppercase" style={{ color: "var(--ink-soft)" }}>You are invited</span>
-                      <span className="font-display text-4xl italic" style={{ color: "var(--ink)" }}>
-                        {c.names[0][0]} <span className="foil">&amp;</span> {c.names[1][0]}
+                      <Mark size={56} style={{ color: "var(--accent)" }} />
+                      <span className="font-display px-3 text-center leading-tight" style={{ color: "var(--ink)", fontSize: "1.35rem" }}>
+                        {c.names[0]} <em className="weds">weds</em> {c.names[1]}
                       </span>
-                      <span className="seal font-display text-lg">&amp;</span>
+                      <span className="seal"><Mark size={26} /></span>
                     </button>
                   </div>
                 </div>
@@ -191,7 +197,7 @@ export function CardRing() {
       </div>
 
       <p className="wheel-caption" aria-live="polite">
-        <b>{THEME_META[t].label}</b> · {w.names[0]} &amp; {w.names[1]}, {w.city}
+        <b>{THEME_META[t].label}</b> · {w.names[0]} weds {w.names[1]}, {w.city}
       </p>
       <p className="mt-1 text-xs" style={{ color: "var(--ink-soft)" }}>
         {open === null ? "Tap a card to bring it forward, then tap it to open." : "Tap close, and the ring turns again."}

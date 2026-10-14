@@ -51,7 +51,7 @@ export function StartForm({ initialTheme }: { initialTheme?: string }) {
                   className="block rounded-lg border p-4 transition-all peer-checked:shadow-[0_0_0_2px_var(--ink)] peer-focus-visible:shadow-[0_0_0_2px_var(--accent)]"
                   style={{ background: m.bg, color: m.ink, borderColor: "var(--hairline)" }}
                 >
-                  <span className="block text-2xl leading-tight" style={{ fontFamily: `${m.fontVar}, Georgia, serif` }}>A &amp; A</span>
+                  <span className="block text-2xl italic leading-tight" style={{ fontFamily: `${m.fontVar}, Georgia, serif` }}>weds</span>
                   <span className="mt-1 block text-[10px] uppercase tracking-[0.2em] opacity-70">{m.label}</span>
                   <span className="mt-3 flex gap-1.5">
                     {m.dots.map((c) => <span key={c} className="h-3 w-3 rounded-full border border-black/10" style={{ background: c }} />)}

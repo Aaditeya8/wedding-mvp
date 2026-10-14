@@ -2,6 +2,7 @@ import { Ornament } from "@/themes/ornaments";
 import { fmtWeddingDate } from "@/lib/format";
 import { Petals } from "./Petals";
 import { Countdown } from "./Countdown";
+import { Mark } from "@/themes/mark";
 
 type HeroWedding = {
   brideName: string;
@@ -33,20 +34,20 @@ export function Hero({ wedding, city }: { wedding: HeroWedding; city?: string })
     <section className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden px-6 py-20 text-center">
       <Petals />
 
-      {/* watermark ampersand, drifts on scroll via --py from ScrollFx */}
+      {/* watermark knot, drifts on scroll via --py from ScrollFx */}
       <span
         aria-hidden
-        className="font-display parallax pointer-events-none absolute left-1/2 top-1/2 select-none italic leading-none"
-        style={{ fontSize: "min(72vw, 820px)", color: "var(--ink)", opacity: 0.045 }}
+        className="parallax pointer-events-none absolute left-1/2 top-1/2 select-none leading-none"
+        style={{ color: "var(--ink)", opacity: 0.05 }}
       >
-        &amp;
+        <Mark size="min(78vw, 880px)" />
       </span>
 
       {(wedding.brideParents || wedding.groomParents) ? (
         <p className="kicker rise rise-1 max-w-xl leading-loose" style={{ letterSpacing: "0.18em" }}>
           With the blessings of
           {wedding.brideParents && <><br />{wedding.brideParents}</>}
-          {wedding.brideParents && wedding.groomParents && <><br /><span aria-hidden>&amp;</span></>}
+          {wedding.brideParents && wedding.groomParents && <><br /><span aria-hidden>and</span></>}
           {wedding.groomParents && <><br />{wedding.groomParents}</>}
         </p>
       ) : (
@@ -60,11 +61,12 @@ export function Hero({ wedding, city }: { wedding: HeroWedding; city?: string })
         <Letters text={wedding.brideName} from={0} />
         <br />
         <em
-          className="foil ltr italic"
+          className="foil ltr weds"
           style={{ "--i": wedding.brideName.length + 1 } as React.CSSProperties}
         >
-          &amp;
-        </em>{" "}
+          weds
+        </em>
+        <br />
         <Letters text={wedding.groomName} from={wedding.brideName.length + 3} />
       </h1>
 

@@ -90,9 +90,10 @@ export function LivePreview() {
             <div key={theme} className="device-fade flex h-full flex-col items-center px-5 pb-0 pt-12 text-center">
               <p className="kicker" style={{ fontSize: "0.5rem" }}>The wedding of</p>
 
-              <h3 className="font-display mt-3 leading-[0.95] tracking-tight" style={{ fontSize: "2.35rem" }}>
+              <h3 className="font-display mt-3 leading-[0.95] tracking-tight" style={{ fontSize: "2.2rem" }}>
                 Ananya<br />
-                <em className="foil italic">&amp;</em> Arjun
+                <em className="foil weds">weds</em><br />
+                Arjun
               </h3>
 
               <div className="mt-3 scale-75"><Ornament theme={theme} slot="hero" /></div>
@@ -158,8 +159,8 @@ export function LivePreview() {
                 className="swatch"
                 style={{ background: m.bg, color: m.ink }}
               >
-                <span className="block truncate" style={{ fontFamily: `${m.fontVar}, Georgia, serif`, fontSize: "1.15rem" }}>
-                  A &amp; A
+                <span className="block truncate italic" style={{ fontFamily: `${m.fontVar}, Georgia, serif`, fontSize: "1.15rem" }}>
+                  weds
                 </span>
                 <span className="mt-1 block truncate text-[9px] uppercase tracking-[0.18em] opacity-70">
                   {m.label}
