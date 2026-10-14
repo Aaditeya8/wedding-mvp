@@ -778,18 +778,70 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
   transform-style: preserve-3d;
   background: transparent;
 }
-.wheel .card3d { width: 100%; }
+/* The ring's pointer tilt is written on .wheel-tilt as --tx/--ty, and custom
+   properties inherit: left alone, every card would tilt a second time on its
+   own 0.5s spring and wobble while the ring turned. Zero them here and give
+   the card its own transform: a lift when open, a swell under the pointer. */
+.wheel .card3d {
+  width: 100%;
+  --tx: 0deg;
+  --ty: 0deg;
+  transform: translateX(var(--shift, 0px)) translateZ(var(--lift, 0px)) scale(var(--grow, 1));
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* the side cards sit in shadow: a scrim on the face, not transparency */
+.wheel .card3d-shade {
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  background: rgb(6 8 16 / var(--shade, 0));
+  pointer-events: none;
+}
+/* seen from behind, a card is its plate only: the faces hide so no mirrored
+   page shows through (the cover's children ignore its hidden backface) */
+.wheel-item[data-back="true"] .card3d { visibility: hidden; }
+@media (hover: hover) and (pointer: fine) {
+  .wheel-item:hover .card3d { --grow: 1.06; }
+}
+/* an open card comes out of the ring toward you, so the cover's swing is
+   clear of its neighbours, and steps right so the open flap stays off the
+   headline column */
+.wheel .card3d[data-open="true"] { --lift: 50px; --grow: 1.03; --shift: 72px; }
+@media (max-width: 640px) {
+  .wheel .card3d[data-open="true"] { --shift: 28px; }
+}
 /* Seen from behind, a card shows a plain back, not its mirrored page: the
    page's back face is hidden and a back plate faces the other way. */
 .wheel .card3d-inner { backface-visibility: hidden; }
 /* cover and page sit on the same plane; lift the cover a hair so the page
    never z-fights through it on a card seen edge-on */
-.wheel .card3d-cover { transform: translateZ(1px); }
+.wheel .card3d-cover {
+  transform: translateZ(1px);
+  /* a quick swing out, a soft landing; the old curve sat still for the first
+     fifth of the second and read as lag */
+  transition: transform 0.9s cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* the inside of the cover: the cover's own back face is hidden, so without
+   this the flap simply vanished past perpendicular instead of lying open */
+.wheel .card3d-cover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  border: 1px solid var(--hairline);
+  background:
+    radial-gradient(var(--hairline) 1px, transparent 1.5px) 0 0 / 20px 20px,
+    var(--surface);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+  transform: rotateY(180deg);
+  backface-visibility: hidden;
+}
 /* the cover's children are their own planes (preserve-3d) and ignore the
    cover's hidden backface — hide theirs too, or a rear card shows mirrored text */
 .wheel .card3d-cover > *, .wheel .card3d-inner > * { backface-visibility: hidden; }
-.wheel-item[data-back="true"] .card3d { visibility: hidden; }
-.wheel .card3d[data-open="true"] .card3d-cover { transform: translateZ(1px) rotateY(-158deg); }
+/* open to 145deg, not flat: the flap stands a little toward you, which reads
+   as held in the hand and keeps its reach to the left short */
+.wheel .card3d[data-open="true"] .card3d-cover { transform: translateZ(1px) rotateY(-145deg); }
 .wheel-item::before {
   content: "";
   position: absolute;
@@ -802,11 +854,24 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
     var(--surface);
   transform: rotateY(180deg);
   backface-visibility: hidden;
+  opacity: var(--dim, 1);
 }
 .wheel .card3d-inner { padding: 1.2rem 0.9rem; }
 .wheel .card3d-cover { box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.7), 2px 0 18px -8px rgba(0, 0, 0, 0.45); }
 .wheel .card3d-inner { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent), 0 30px 60px -30px rgba(0, 0, 0, 0.7); }
-.wheel-caption { margin-top: 1.25rem; font-size: 0.85rem; color: var(--ink-soft); }
+.wheel-close {
+  margin-top: 1rem;
+  padding: 0.55em 1.3em;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  color: var(--ink);
+  font-size: 0.6rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+.wheel-close:hover { background: var(--accent); color: var(--surface); }
+.wheel-caption { margin-top: 1.75rem; font-size: 0.85rem; color: var(--ink-soft); }
 .wheel-caption b { color: var(--ink); font-weight: 600; }
 
 /* ---- the guest-list board (the real workspace chrome, in a themed room) ---- */
@@ -907,6 +972,7 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
 @media (prefers-reduced-motion: reduce) {
   .hero-copy, .hero-ring { animation: none; }
   .wheel-tilt { transition: none; transform: none; }
+  .wheel .card3d { transition: none; }
   .sweep, #sweep :where(p, h1, h2, h3, li, b), .sweep-pill, .band { transition: none; }
 }
 

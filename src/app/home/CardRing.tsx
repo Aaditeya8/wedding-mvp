@@ -12,7 +12,13 @@ import { Mark } from "@/themes/mark";
 
    The ring's rotation is written to the DOM every frame from one rAF loop.
    React only hears about two things: which card is in front, and which is
-   open. */
+   open.
+
+   Every card stays on show: the three facing away turn their back plate to
+   you and dim, they never vanish (their faces are hidden, so no mirrored
+   page shows through the plate). An open card lifts out of the ring. It
+   closes on a tap anywhere on its page, on Escape, or on a tap on the empty
+   stage. */
 
 type Couple = { names: [string, string]; when: string; city: string; rites: string[] };
 
@@ -64,12 +70,22 @@ export function CardRing() {
       items.forEach((it, i) => {
         const a = (((rot.current + i * STEP) % 360) + 360) % 360;
         const c = Math.cos((a * Math.PI) / 180); // 1 = facing you, -1 = facing away
-        it.style.opacity = String(0.12 + 0.88 * ((c + 1) / 2) ** 1.6);
-        it.style.pointerEvents = c < 0.1 ? "none" : "";
+        // Depth cues as variables, never `opacity` on the item: opacity is a
+        // grouping property and flattens the item's 3D, so its back plate
+        // (rotated 180deg) could never face you and the rear of the ring was
+        // empty. --dim fades the plate of a card seen from behind; --shade is
+        // a scrim over the face of a card to the side. A face is never made
+        // transparent, or the plates behind would show through it.
+        it.style.setProperty("--dim", String(Math.min(1, 0.42 + 0.58 * ((c + 1) / 1.8) ** 1.4)));
+        it.style.setProperty("--shade", String(Math.max(0, 0.3 * (1 - c))));
+        // only a card turned well away is out of reach; the front card and the
+        // ones on either side all take the pointer
+        it.style.pointerEvents = c < -0.2 ? "none" : "";
         // facing away: show only the back plate, never a mirrored page
         it.dataset.back = c < 0 ? "true" : "false";
         if (c > bestC) { bestC = c; best = i; }
       });
+      items.forEach((it, i) => { it.dataset.front = i === best ? "true" : "false"; });
       if (best !== frontNow) { frontNow = best; setFront(best); }
     };
 
@@ -119,8 +135,19 @@ export function CardRing() {
     };
   }, []);
 
+  // Escape closes whatever is open
+  useEffect(() => {
+    if (open === null) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
   function pick(i: number) {
     if (i === front) {
+      // the ring pauses wherever the pointer caught it, so an opening card
+      // also eases to dead centre rather than opening at a slant
+      if (open !== i) target.current = -i * STEP;
       setOpen((o) => (o === i ? null : i));
     } else {
       target.current = -i * STEP;
@@ -128,12 +155,17 @@ export function CardRing() {
     }
   }
 
+  // a tap on the empty stage, outside every card, closes the open one
+  function onStageClick(e: React.MouseEvent) {
+    if (!(e.target as HTMLElement).closest(".card3d")) setOpen(null);
+  }
+
   const t = THEMES[front];
   const w = WEDDINGS[t];
 
   return (
     <div className="flex flex-col items-center">
-      <div ref={stage} className="wheel-stage">
+      <div ref={stage} className="wheel-stage" onClick={onStageClick}>
         <div ref={tilt} className="wheel-tilt">
           <div ref={ring} className="wheel">
             {THEMES.map((theme, i) => {
@@ -147,7 +179,8 @@ export function CardRing() {
                   style={{ "--a": `${i * STEP}deg` } as React.CSSProperties}
                 >
                   <div className="card3d" data-open={isOpen}>
-                    <div className="card3d-inner">
+                    {/* the whole open page is the close target */}
+                    <div className="card3d-inner" onClick={() => setOpen(null)}>
                       <p className="text-[0.5rem] tracking-[0.3em] uppercase" style={{ color: "var(--ink-soft)" }}>Together with their families</p>
                       <h3 className="font-display mt-2 leading-[0.95] tracking-tight" style={{ fontSize: "1.9rem" }}>
                         {c.names[0]}<br />
@@ -161,12 +194,7 @@ export function CardRing() {
                           <li key={r} className="rite" style={{ fontSize: "0.55rem", padding: "0.25em 0.6em" }}>{r}</li>
                         ))}
                       </ul>
-                      <button
-                        type="button"
-                        onClick={() => setOpen(null)}
-                        className="mt-4 text-[0.6rem] underline underline-offset-4"
-                        style={{ color: "var(--ink-soft)" }}
-                      >
+                      <button type="button" onClick={() => setOpen(null)} className="wheel-close">
                         Close
                       </button>
                     </div>
@@ -187,6 +215,7 @@ export function CardRing() {
                         {c.names[0]} <em className="weds">weds</em> {c.names[1]}
                       </span>
                       <span className="seal"><Mark size={26} /></span>
+                      <span aria-hidden className="card3d-shade" />
                     </button>
                   </div>
                 </div>
@@ -200,7 +229,7 @@ export function CardRing() {
         <b>{THEME_META[t].label}</b> · {w.names[0]} weds {w.names[1]}, {w.city}
       </p>
       <p className="mt-1 text-xs" style={{ color: "var(--ink-soft)" }}>
-        {open === null ? "Tap a card to bring it forward, then tap it to open." : "Tap close, and the ring turns again."}
+        {open === null ? "Tap a card to bring it forward, then tap it to open." : "Tap the card again to close it, and the ring turns on."}
       </p>
     </div>
   );
