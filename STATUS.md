@@ -1,3 +1,25 @@
+# Status — 14 October 2026 — landing page rebuilt around the PRD
+
+`main` at `d228f76`, pushed. **Not yet deployed** — run `vercel deploy --prod`.
+
+The CEO's PRD (27 Sep) reframes the product as a wedding *operations* platform. The
+marketing page now sells that, honestly: what is live, what ships in November, what
+ships December–January.
+
+- **Hero:** six invitations, each in one of the six looks, on a slowly turning 3D ring.
+  Tap a card to bring it to the front, tap again and it opens on its hinge.
+- **The page wears the product.** Every section declares a look; as you scroll the whole
+  page restyles through the same token contract a couple's site uses. A small pill
+  names the look you're on.
+- **Guest-list board:** the real workspace chrome with replies landing while you watch.
+- **Ceremonies as a week**, roadmap by month (print, WhatsApp Business, hotel blocks,
+  ID vault under DPDP, 24-hour itineraries, transit tracking, photo drive, vendor board,
+  UPI shagun).
+- `@media print` on the public site: first step towards web-to-print.
+- Gotcha: Tailwind v4's `ring` utility hijacked a `.ring` element — renamed to `.wheel`.
+
+124 unit ✅ · tsc ✅ · build ✅ · browser-checked at 1440 and 390.
+
 # Status — 13 September 2026 — **LIVE** 🎉
 
 ## https://wedding-mvp-six.vercel.app — Vercel + Neon, `main` pushed
