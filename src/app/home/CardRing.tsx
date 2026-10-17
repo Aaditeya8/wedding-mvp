@@ -42,6 +42,8 @@ export function CardRing() {
   const target = useRef<number | null>(null);
   const hover = useRef(false);
   const openRef = useRef<number | null>(null);
+  // the ring holds still until a closing card has settled back into it
+  const holdUntil = useRef(0);
   const [front, setFront] = useState(0);
   const [open, setOpen] = useState<number | null>(null);
   openRef.current = open;
@@ -62,6 +64,10 @@ export function CardRing() {
     let raf = 0;
     let last = performance.now();
     let frontNow = -1;
+    // deg per ms; eased toward its target so the ring drifts to a stop under
+    // the pointer and gathers pace again, instead of halting and lurching
+    const CRUISE = 0.009;
+    let spin = reduced ? 0 : CRUISE;
 
     const paint = () => {
       el.style.transform = `rotateY(${rot.current}deg)`;
@@ -96,12 +102,19 @@ export function CardRing() {
         if (target.current !== null) {
           let d = target.current - rot.current;
           d = ((d + 540) % 360) - 180;
-          if (reduced || Math.abs(d) < 0.05) { rot.current = target.current; target.current = null; }
+          // arrive at rest, so the drift afterwards starts from nothing
+          if (reduced || Math.abs(d) < 0.05) { rot.current = target.current; target.current = null; spin = 0; }
           else rot.current += d * Math.min(1, dt / 260);
           paint();
-        } else if (!reduced && !hover.current && openRef.current === null) {
-          rot.current = (rot.current - dt * 0.009) % 360;
-          paint();
+        } else if (!reduced) {
+          const go = !hover.current && openRef.current === null && now >= holdUntil.current;
+          const want = go ? CRUISE : 0;
+          // gather pace slowly, come to rest a little quicker
+          spin += (want - spin) * Math.min(1, dt / (go ? 900 : 350));
+          if (spin > 0.00005) {
+            rot.current = (rot.current - dt * spin) % 360;
+            paint();
+          } else spin = 0;
         }
       }
       raf = requestAnimationFrame(tick);
@@ -134,6 +147,14 @@ export function CardRing() {
       st.removeEventListener("pointermove", onMove);
     };
   }, []);
+
+  // a card that has just closed is still swinging shut and settling: keep
+  // the ring still until it is home (cover 0.1s + 0.75s, settle 0.12s + 0.7s)
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (open === null && wasOpen.current) holdUntil.current = performance.now() + 850;
+    wasOpen.current = open !== null;
+  }, [open]);
 
   // Escape closes whatever is open
   useEffect(() => {

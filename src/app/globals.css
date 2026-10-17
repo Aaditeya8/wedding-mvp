@@ -802,7 +802,7 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
   --tx: 0deg;
   --ty: 0deg;
   transform: translateX(var(--shift, 0px)) translateZ(var(--lift, 0px)) scale(var(--grow, 1));
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: transform 0.7s cubic-bezier(0.45, 0, 0.2, 1) 0.12s;
 }
 /* the side cards sit in shadow: a scrim on the face, not transparency */
 .wheel .card3d-shade {
@@ -832,9 +832,10 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
    never z-fights through it on a card seen edge-on */
 .wheel .card3d-cover {
   transform: translateZ(1px);
-  /* a quick swing out, a soft landing; the old curve sat still for the first
-     fifth of the second and read as lag */
-  transition: transform 0.9s cubic-bezier(0.32, 0.72, 0, 1);
+  /* closing: an even ease-in-out that starts once the page has faded. The
+     old front-loaded curve covered nine-tenths of the swing in 80ms and
+     read as a slam */
+  transition: transform 0.75s cubic-bezier(0.55, 0, 0.25, 1) 0.1s;
 }
 /* the inside of the cover: the cover's own back face is hidden, so without
    this the flap simply vanished past perpendicular instead of lying open */
@@ -873,17 +874,40 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
 }
 .wheel .card3d-inner { padding: 1.2rem 0.9rem; overflow: hidden; }
 .wheel-names { font-size: 1.9rem; }
-/* The page inside is only there while the card is open. Shut, its contents
-   were still laid out and painting under the cover, and on a phone-sized
-   card the Close button overflowed the page and hung below every closed
-   card. Hidden at once on close would blank the page while the cover is
-   still swinging back over it, so hiding waits out the swing. */
-.wheel .card3d-inner > * { visibility: hidden; transition: visibility 0s linear 0.9s; }
-.wheel .card3d[data-open="true"] .card3d-inner > * { visibility: visible; transition-delay: 0s; }
-/* the seal's own transform transition replaced the cover's opacity fade,
-   so it popped back in at once while the rest of the cover faded */
-.card3d-cover > .seal {
-  transition: opacity 0.3s ease 0.32s, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+/* Opening and closing are choreographed like a real card.
+   Open:  the card lifts out (0.7s) as the cover swings (0.85s); the page's
+          contents fade in once the cover is past perpendicular.
+   Close: the page's contents fade out FIRST, then the cover swings shut on
+          an even ease and its face fades back in as it lands, then the card
+          settles into the ring. Shut, the page's contents are not painted at
+          all, so nothing of the inside ever shows past or through a cover. */
+.wheel .card3d-inner > * {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.16s ease, visibility 0s linear 0.16s;
+}
+.wheel .card3d[data-open="true"] .card3d-inner > * {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.45s ease 0.38s, visibility 0s;
+}
+.wheel .card3d-cover > *,
+.wheel .card3d-cover > .seal {
+  transition: opacity 0.32s ease 0.4s, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.wheel .card3d[data-open="true"] .card3d-cover > * {
+  opacity: 0;
+  transition: opacity 0.2s ease 0.12s;
+}
+.wheel .card3d[data-open="true"] { transition-delay: 0s; }
+.wheel .card3d[data-open="true"] .card3d-cover {
+  transition: transform 0.85s cubic-bezier(0.45, 0, 0.2, 1);
+}
+/* the browser's blue focus box flashed round the card after Escape */
+.wheel .card3d-cover:focus { outline: none; }
+.wheel .card3d-cover:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: 6px;
 }
 @media (max-width: 640px) {
   .wheel .card3d-inner { padding: 0.8rem 0.55rem; }
@@ -1007,7 +1031,7 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
 @media (prefers-reduced-motion: reduce) {
   .hero-copy, .hero-ring { animation: none; }
   .wheel-tilt { transition: none; transform: none; }
-  .wheel .card3d { transition: none; }
+  .wheel .card3d, .wheel .card3d-cover, .wheel .card3d-inner > *, .wheel .card3d-cover > * { transition: none !important; }
   #sweep { transition: none; }
 }
 
