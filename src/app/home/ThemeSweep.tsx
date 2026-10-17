@@ -20,16 +20,23 @@ export function ThemeSweep({ initial }: { initial: Theme }) {
     const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-sweep]"));
     if (!sections.length) return;
 
+    // A section takes over once its top passes the line, but only by a
+    // margin, and hands back only once it has fallen back past it by the
+    // same margin. Without this dead band a boundary resting near the line
+    // flipped the look back and forth on every small scroll.
+    const PAD = 32;
+    let cur = 0;
     let raf = 0;
     const pick = () => {
       raf = 0;
       const line = window.innerHeight * 0.38;
-      let current: HTMLElement | undefined;
-      for (const s of sections) {
-        const r = s.getBoundingClientRect();
-        if (r.top <= line) current = s;
-      }
-      const t = (current ?? sections[0]).dataset.sweep as Theme;
+      let next = 0;
+      sections.forEach((s, i) => {
+        const edge = i <= cur ? line + PAD : line - PAD;
+        if (s.getBoundingClientRect().top <= edge) next = i;
+      });
+      cur = next;
+      const t = sections[cur].dataset.sweep as Theme;
       if (root.dataset.theme !== t) {
         root.dataset.theme = t;
         setTheme(t);

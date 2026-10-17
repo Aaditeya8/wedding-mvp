@@ -182,12 +182,12 @@ export function CardRing() {
                     {/* the whole open page is the close target */}
                     <div className="card3d-inner" onClick={() => setOpen(null)}>
                       <p className="text-[0.5rem] tracking-[0.3em] uppercase" style={{ color: "var(--ink-soft)" }}>Together with their families</p>
-                      <h3 className="font-display mt-2 leading-[0.95] tracking-tight" style={{ fontSize: "1.9rem" }}>
+                      <h3 className="wheel-names font-display mt-2 leading-[0.95] tracking-tight">
                         {c.names[0]}<br />
                         <em className="foil weds">weds</em><br />
                         {c.names[1]}
                       </h3>
-                      <div className="mt-2 scale-[0.6]"><Ornament theme={theme} slot="hero" /></div>
+                      <div className="wheel-orn mt-2 scale-[0.6]"><Ornament theme={theme} slot="hero" /></div>
                       <p className="text-[0.5rem] tracking-[0.2em] uppercase" style={{ color: "var(--ink-soft)" }}>{c.when} · {c.city}</p>
                       <ul className="mt-3 flex flex-wrap justify-center gap-1">
                         {c.rites.map((r) => (

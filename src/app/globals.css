@@ -631,10 +631,26 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
    #sweep carries data-theme; ThemeSweep swaps it per section.
    ============================================================ */
 
-.sweep { transition: background-color 0.9s ease, color 0.9s ease; }
-#sweep :where(p, h1, h2, h3, li, b) { transition: color 0.9s ease; }
-#sweep :where(.rite, .week-rite, .roadmap-item, .cta-ghost, .demo-choice, .swatch, .card-mount) {
-  transition: border-color 0.9s ease, color 0.9s ease, background-color 0.9s ease;
+/* The swap animates the theme TOKENS, not each element's colour. The
+   tokens are registered as colours, so #sweep can transition them, and
+   everything that reads them (text, borders, SVG ornaments, gradients,
+   color-mix, shadows) inherits the in-between value on the same frame.
+   The old way faded text and backgrounds per element while borders,
+   ornaments and gradients snapped, so mid-swap the page wore two themes
+   at once. Cards and the phone set their own data-theme and keep theirs. */
+@property --bg { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --surface { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --ink { syntax: "<color>"; inherits: true; initial-value: currentColor; }
+@property --ink-soft { syntax: "<color>"; inherits: true; initial-value: currentColor; }
+@property --accent { syntax: "<color>"; inherits: true; initial-value: currentColor; }
+@property --accent-2 { syntax: "<color>"; inherits: true; initial-value: currentColor; }
+@property --hairline { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --band-bg { syntax: "<color>"; inherits: true; initial-value: transparent; }
+@property --band-ink { syntax: "<color>"; inherits: true; initial-value: currentColor; }
+#sweep {
+  transition-property: --bg, --surface, --ink, --ink-soft, --accent, --accent-2, --hairline, --band-bg, --band-ink;
+  transition-duration: 0.8s;
+  transition-timing-function: ease;
 }
 
 .wrap { margin-inline: auto; max-width: 72rem; padding-inline: 1.5rem; }
@@ -671,7 +687,6 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
   -webkit-backdrop-filter: blur(10px);
   color: var(--ink-soft);
   font-size: 0.72rem;
-  transition: background-color 0.9s ease, color 0.9s ease, border-color 0.9s ease;
 }
 .sweep-pill b { color: var(--ink); font-weight: 600; }
 .sweep-dots { display: inline-flex; gap: 4px; }
@@ -856,7 +871,28 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
   backface-visibility: hidden;
   opacity: var(--dim, 1);
 }
-.wheel .card3d-inner { padding: 1.2rem 0.9rem; }
+.wheel .card3d-inner { padding: 1.2rem 0.9rem; overflow: hidden; }
+.wheel-names { font-size: 1.9rem; }
+/* The page inside is only there while the card is open. Shut, its contents
+   were still laid out and painting under the cover, and on a phone-sized
+   card the Close button overflowed the page and hung below every closed
+   card. Hidden at once on close would blank the page while the cover is
+   still swinging back over it, so hiding waits out the swing. */
+.wheel .card3d-inner > * { visibility: hidden; transition: visibility 0s linear 0.9s; }
+.wheel .card3d[data-open="true"] .card3d-inner > * { visibility: visible; transition-delay: 0s; }
+/* the seal's own transform transition replaced the cover's opacity fade,
+   so it popped back in at once while the rest of the cover faded */
+.card3d-cover > .seal {
+  transition: opacity 0.3s ease 0.32s, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (max-width: 640px) {
+  .wheel .card3d-inner { padding: 0.8rem 0.55rem; }
+  .wheel-names { font-size: 1.3rem; }
+  /* a phone-sized page has no room for these: the ornament keeps its full
+     layout height under scale(), and the whole page already closes on a tap */
+  .wheel .card3d-inner .wheel-orn, .wheel .card3d-inner .wheel-close { display: none; }
+  .wheel .card3d-inner ul { margin-top: 0.6rem; }
+}
 .wheel .card3d-cover { box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.7), 2px 0 18px -8px rgba(0, 0, 0, 0.45); }
 .wheel .card3d-inner { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent), 0 30px 60px -30px rgba(0, 0, 0, 0.7); }
 .wheel-close {
@@ -953,7 +989,6 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
   text-align: center;
   background: var(--band-bg);
   color: var(--band-ink);
-  transition: background-color 0.9s ease, color 0.9s ease;
 }
 .band-h2 { margin-inline: auto; max-width: 42rem; font-size: clamp(2.4rem, 5.5vw, 4.5rem); line-height: 1; letter-spacing: -0.02em; text-wrap: balance; }
 .band-cta {
@@ -973,7 +1008,7 @@ html.fx .rule-grow.is-in::before { transform: scaleX(1); }
   .hero-copy, .hero-ring { animation: none; }
   .wheel-tilt { transition: none; transform: none; }
   .wheel .card3d { transition: none; }
-  .sweep, #sweep :where(p, h1, h2, h3, li, b), .sweep-pill, .band { transition: none; }
+  #sweep { transition: none; }
 }
 
 /* ============================================================

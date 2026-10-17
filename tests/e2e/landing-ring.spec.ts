@@ -84,3 +84,23 @@ test("a card grows under the pointer", async ({ page }) => {
   await page.waitForTimeout(700);
   expect(await scaleOf()).toBeGreaterThan(1.03);
 });
+
+/* The inside page painted under every closed cover, and on a phone-sized
+   card the Close button overflowed the page and hung below each card. */
+for (const width of [390, 1280]) {
+  test(`a closed card shows nothing of its inside page (${width}px)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    await settle(page);
+    const inner = await page.evaluate(() =>
+      [...document.querySelectorAll<HTMLElement>(".wheel .card3d-inner")].map((el) => ({
+        overflow: el.scrollHeight - el.clientHeight,
+        shown: [...el.children].filter((c) => getComputedStyle(c).visibility !== "hidden").length,
+      })),
+    );
+    for (const s of inner) {
+      expect(s.overflow).toBeLessThanOrEqual(0);
+      expect(s.shown).toBe(0);
+    }
+  });
+}
